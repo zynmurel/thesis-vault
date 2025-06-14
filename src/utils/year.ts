@@ -1,0 +1,1 @@
+export const years = Array.from({ length: 50 }, (_, i) => `${1980 + i}`)

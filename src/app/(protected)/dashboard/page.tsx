@@ -1,9 +1,10 @@
-import React from 'react'
+import React from "react";
 
 function Page() {
   return (
-    <div>Dashboard</div>
-  )
+    <div>
+    </div>
+  );
 }
 
-export default Page
+export default Page;

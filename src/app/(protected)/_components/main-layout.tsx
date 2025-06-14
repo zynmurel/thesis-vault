@@ -21,7 +21,7 @@ export default function MainLayout({
         <div className="h-full w-full overflow-hidden md:rounded-xl">
           <div className="relative flex h-full flex-col bg-background">
             <SiteHeader />
-            <div className="flex flex-1 flex-col overflow-y-scroll">
+            <div className="flex flex-1 flex-col overflow-y-scroll p-5">
               {children}
             </div>
           </div>

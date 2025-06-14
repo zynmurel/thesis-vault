@@ -60,7 +60,6 @@ function LoginForm() {
     } else {
       form.clearErrors()
     }
-    console.log(mutationState)
   },[mutationState.error, form])
 
   return (

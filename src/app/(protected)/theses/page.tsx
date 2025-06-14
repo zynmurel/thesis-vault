@@ -1,9 +1,296 @@
-import React from 'react'
+"use client";
+import {
+  useQueryStates,
+  parseAsInteger,
+  parseAsString,
+  useQueryState,
+  parseAsArrayOf,
+} from "nuqs";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  BookOpenText,
+  ChevronLeft,
+  ChevronRight,
+  ListFilterPlus,
+  LoaderCircle,
+  Plus,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from "@/components/ui/pagination";
+import { api } from "@/trpc/react";
+import { Separator } from "@/components/ui/separator";
 
 function Page() {
+  const thesesIdQueryState = useQueryState(
+    "upsert",
+    parseAsString,
+  );
+  const [filterTags, setFilterTags] = useQueryState(
+    "tags",
+    parseAsArrayOf(parseAsInteger).withDefault([]),
+  );
+  const [courseCode, setCourseCode] = useQueryState(
+    "courseCode",
+    parseAsString.withDefault("ALL"),
+  );
+  const [title, setTitle] = useQueryState(
+    "title",
+    parseAsString.withDefault(""),
+  );
+
+  const [pagination] = useQueryStates({
+    skip: parseAsInteger.withDefault(0),
+    take: parseAsInteger.withDefault(10),
+  });
+
+  const { data: tags, isLoading: tagsIsLoading } = api.tags.getAll.useQuery();
+  const { data: courses, isLoading: coursesIsLoading } =
+    api.courses.getAll.useQuery();
+  const { data: theses, isLoading: thesesIsLoading } =
+    api.theses.getMany.useQuery({
+      tags: filterTags ?? [],
+      courseCode,
+      title,
+      skip: pagination.skip,
+      take: pagination.take,
+    });
+
+  const { data: thesesCount } = api.theses.getCount.useQuery({
+    tags: filterTags ?? [],
+    courseCode,
+    title,
+  });
+
+  const toggleTag = (tagId: number) => {
+    setFilterTags((prev) => {
+      const list = prev ?? [];
+      return list.includes(tagId)
+        ? list.filter((t) => t !== tagId)
+        : [...list, tagId];
+    });
+  };
+
+  const onSelectCourse = (courseCode: string) => {
+    setCourseCode(courseCode);
+  };
+
+  const onSearchTitle = (title: string) => {
+    setTitle(title);
+  };
+
+  const onCreateThesis = () => thesesIdQueryState[1]("create");
+
+  // Placeholder filter logic (you can replace this with real logic)
+  const filteredTheses = theses;
+
   return (
-    <div>Theses</div>
-  )
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex flex-row items-center gap-2">
+          <BookOpenText className="size-10" />
+          <div className="flex flex-col">
+            <h2 className="text-lg font-bold">Theses</h2>
+            <p className="-mt-1 text-sm">Find and filter theses</p>
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-row justify-between gap-2">
+        <div className="flex flex-row gap-2">
+          <Input
+            value={title}
+            onChange={(e) => onSearchTitle(e.target.value)}
+            className="md:min-w-80"
+            placeholder="Search theses title"
+          />
+          <Select onValueChange={(e) => onSelectCourse(e)} defaultValue="ALL">
+            <SelectTrigger className="w-full min-w-60">
+              <div className="max-w-44 truncate">
+                {courseCode === "ALL"
+                  ? "All Courses"
+                  : courses?.find((c) => c.code === courseCode)?.title}
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {coursesIsLoading ? (
+                  <LoaderCircle className="animate-spin" />
+                ) : (
+                  <div>
+                    <SelectItem value={"ALL"}>All Courses</SelectItem>
+                    {courses?.map((course) => (
+                      <SelectItem value={course.code} key={course.code}>
+                        <div className="flex flex-row gap-1">
+                          <span>{course.title}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </div>
+                )}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline">
+                <ListFilterPlus />
+                Filters
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64">
+              <h4 className="mb-2 text-sm font-medium">Filter by Tags</h4>
+              <div className="flex max-h-60 flex-col gap-2 overflow-auto">
+                {tagsIsLoading ? (
+                  <LoaderCircle className="animate-spin" />
+                ) : (
+                  tags?.map((tag) => (
+                    <label key={tag.id} className="flex items-center gap-2">
+                      <Checkbox
+                        checked={filterTags?.includes(tag.id)}
+                        onCheckedChange={() => toggleTag(tag.id)}
+                      />
+                      <span className="text-sm">{tag.tag}</span>
+                    </label>
+                  ))
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+        <Button onClick={onCreateThesis}>
+          <Plus />
+          <p className="hidden pr-1 sm:flex">Thesis</p>
+        </Button>
+      </div>
+
+      <div className="rounded-lg border p-2 py-1">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Title</TableHead>
+              <TableHead>Course</TableHead>
+              <TableHead>Members</TableHead>
+              <TableHead>Year</TableHead>
+              <TableHead>Tags</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredTheses?.map((thesis) => (
+              <TableRow key={thesis.id}>
+                <TableCell>{thesis.title}</TableCell>
+                <TableCell>{thesis.courseCode}</TableCell>
+                <TableCell>{thesis.members}</TableCell>
+                <TableCell>{new Date(thesis.year).getFullYear()}</TableCell>
+                <TableCell className="flex flex-wrap gap-1">
+                  {thesis.Tags.map((tag) => (
+                    <span
+                      key={tag.Tag.tag}
+                      className="bg-muted text-muted-foreground rounded px-2 py-0.5 text-xs"
+                    >
+                      {tag.Tag.tag}
+                    </span>
+                  ))}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        {thesesIsLoading && (
+          <div className="flex w-full items-center justify-center p-5">
+            <LoaderCircle className="animate-spin" />
+          </div>
+        )}
+        {!thesesCount && !thesesIsLoading && <div className=" text-muted-foreground text-sm flex items-center justify-center p-5">
+          <p>No theses found</p>
+        </div>}
+        <Separator/>
+        <TablePagination thesesCount={thesesCount} />
+      </div>
+    </div>
+  );
 }
 
-export default Page
+const TablePagination = ({ thesesCount = 0 }: { thesesCount?: number }) => {
+  const [pagination, setPagination] = useQueryStates(
+    {
+      skip: parseAsInteger.withDefault(0),
+      take: parseAsInteger.withDefault(10),
+    },
+    {
+      history: "push",
+    },
+  );
+
+  const onNext = () => {
+    setPagination((prev) => {
+      return { ...prev, skip: prev.skip + prev.take };
+    });
+  };
+
+  const onPrev = () => {
+    setPagination((prev) => ({ ...prev, skip: prev.skip - prev.take }));
+  };
+  return (
+    <Pagination className="mt-1 flex justify-end">
+      <PaginationContent>
+        <PaginationItem>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-sm"
+            disabled={pagination.skip < 1}
+            onClick={onPrev}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
+        </PaginationItem>
+        <div className="text-muted-foreground text-sm">
+          <p>{`${thesesCount ? Math.ceil(pagination.skip / pagination.take) + 1 : 0} of ${thesesCount ? Math.ceil(thesesCount / pagination.take) : 0}`}</p>
+        </div>
+        <PaginationItem>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-sm"
+            disabled={
+              thesesCount
+                ? pagination.skip + pagination.take > thesesCount
+                : true
+            }
+            onClick={onNext}
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
+  );
+};
+
+export default Page;
