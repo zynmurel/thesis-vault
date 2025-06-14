@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,8 +13,8 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
+import { useEffect, useState } from "react";
 
 const formSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -22,8 +22,10 @@ const formSchema = z.object({
 });
 
 function LoginForm() {
-    const session = useSession()
-    console.log(session)
+  const [mutationState, setMutationState] = useState({
+    loading: false,
+    error: false,
+  });
 
   const router = useRouter();
 
@@ -36,20 +38,34 @@ function LoginForm() {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setMutationState((prev) => ({ ...prev, loading: true }));
     const res = await signIn("credentials", {
       username: values.username,
       password: values.password,
       redirect: false,
     });
+    setMutationState((prev) => ({ ...prev, loading: false }));
 
     if (!res?.error) {
       router.push("/");
+    } else {
+      setMutationState(() => ({ loading : false , error: true }));
     }
   };
 
+  useEffect(()=>{
+    if(mutationState.error){
+      form.setError("username", {})
+      form.setError("password", {})
+    } else {
+      form.clearErrors()
+    }
+    console.log(mutationState)
+  },[mutationState.error, form])
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" onChange={()=>setMutationState(prev=>({ ...prev, error : false }))}>
         <FormField
           control={form.control}
           name="username"
@@ -59,7 +75,7 @@ function LoginForm() {
               <FormControl>
                 <Input placeholder="Enter username" {...field} />
               </FormControl>
-              <FormMessage />
+              {/* <FormMessage /> */}
             </FormItem>
           )}
         />
@@ -77,14 +93,16 @@ function LoginForm() {
                   {...field}
                 />
               </FormControl>
-              <FormMessage />
+              {/* <FormMessage /> */}
             </FormItem>
           )}
         />
+        <p className={` -mt-2 text-end text-destructive text-sm  ${mutationState.error ? "visible" : "invisible"}`}>Wrong credentials</p>
 
         <Button
           type="submit"
-          className="mt-3 w-full cursor-pointer rounded-full p-6 text-lg"
+          disabled={mutationState.loading}
+          className=" w-full cursor-pointer rounded-full p-6 text-lg"
           size={"lg"}
         >
           Login

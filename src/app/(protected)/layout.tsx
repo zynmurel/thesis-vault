@@ -1,5 +1,6 @@
 import { auth } from "@/server/auth";
 import { redirect } from "next/navigation";
+import MainLayout from "./_components/main-layout";
 
 export default async function ProtectedLayout({
   children,
@@ -12,5 +13,5 @@ export default async function ProtectedLayout({
     redirect("/login");
   }
 
-  return <>{children}</>;
+  return <MainLayout>{children}</MainLayout>;
 }
