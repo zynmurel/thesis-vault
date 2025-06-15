@@ -22,7 +22,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { parseAsString, useQueryState } from "nuqs";
-import { LoaderCircle, Plus, SendHorizonal, Trash2 } from "lucide-react";
+import {
+  Camera,
+  LoaderCircle,
+  Plus,
+  SendHorizonal,
+  Trash2,
+} from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -34,8 +40,12 @@ import {
 import { api } from "@/trpc/react";
 import { years } from "@/utils/year";
 import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
+import { useState, type Dispatch, type SetStateAction } from "react";
+import { handleUploadSupabase } from "@/lib/upload";
 
 const thesisSchema = z.object({
+  thesisPhoto: z.any().optional(),
   courseCode: z.string(),
   title: z.string(),
   abstract: z.string(),
@@ -56,11 +66,15 @@ interface Props {
   onSubmit: (values: ThesisFormValues) => void;
   form: UseFormReturn<ThesisFormValues>;
   onClose: () => void;
-  isPending : boolean;
+  isPending: boolean;
+  thesisPhoto: string | null;
+  setThesisPhoto: Dispatch<SetStateAction<string | null>>;
 }
 
 export default function UpsertThesis() {
   const [thesesId, setThesesId] = useQueryState("upsert", parseAsString);
+  const [thesisPhoto, setThesisPhoto] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const isCreate = thesesId === "create";
   const utils = api.useUtils();
 
@@ -79,21 +93,36 @@ export default function UpsertThesis() {
       toast("Thesis added", {
         description: "Your thesis has been saved.",
       });
-      form.reset()
-      onClose()
+      form.reset();
+      setThesisPhoto(null)
+      onClose();
     },
+    onSettled: () => setIsLoading(false),
   });
 
-  const onSubmit = (data: ThesisFormValues) => {
-    mutate({
-      id: thesesId === "ALL" ? "" : String(thesesId),
-      title: data.title,
-      abstract: data.abstract,
-      year: data.year,
-      courseCode: data.courseCode,
-      members: JSON.stringify(data.members),
-      tagIds : data.tags
-    });
+  const onSubmit = async (data: ThesisFormValues) => {
+    setIsLoading(true);
+    let thesisPhoto = null;
+    if (data.thesisPhoto) {
+      thesisPhoto = await handleUploadSupabase(data.thesisPhoto).finally(() =>
+        setIsLoading(false),
+      );
+    }
+    if (!thesisPhoto) {
+      setIsLoading(false);
+      form.setError("thesisPhoto", { message: "Image is required" });
+    } else {
+      mutate({
+        id: thesesId === "ALL" ? "" : String(thesesId),
+        title: data.title,
+        abstract: data.abstract,
+        year: data.year,
+        courseCode: data.courseCode,
+        members: JSON.stringify(data.members),
+        tagIds: data.tags,
+        thesisPhoto,
+      });
+    }
   };
 
   return (
@@ -107,13 +136,27 @@ export default function UpsertThesis() {
               : "Make the necessary changes to update the existing thesis information."}
           </DialogDescription>
         </DialogHeader>
-        <ThesisForm form={form} onSubmit={onSubmit} onClose={onClose} isPending={isPending} />
+        <ThesisForm
+          form={form}
+          onSubmit={onSubmit}
+          onClose={onClose}
+          isPending={isPending || isLoading}
+          thesisPhoto={thesisPhoto}
+          setThesisPhoto={setThesisPhoto}
+        />
       </DialogContent>
     </Dialog>
   );
 }
 
-const ThesisForm = ({ onSubmit, form, onClose, isPending }: Props) => {
+const ThesisForm = ({
+  onSubmit,
+  form,
+  onClose,
+  isPending,
+  thesisPhoto,
+  setThesisPhoto,
+}: Props) => {
   const { control, handleSubmit } = form;
 
   const { data: courses, isLoading: coursesIsLoading } =
@@ -126,10 +169,72 @@ const ThesisForm = ({ onSubmit, form, onClose, isPending }: Props) => {
     name: "members", // ✅ Zod: members: [{ name: string }]
   });
 
+  const handleChangeLogo = (event: any) => {
+    const file = event.target.files[0];
+    if (file.size > 2 * 1024 * 1024) {
+      form.setError("thesisPhoto", {
+        type: "manual",
+        message: "File size should not exceed 2MB",
+      });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataURL = reader.result as string;
+      setThesisPhoto(dataURL);
+    };
+    form.setValue("thesisPhoto", file);
+    form.clearErrors("thesisPhoto");
+    reader.readAsDataURL(file);
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="mt-2 space-y-4 px-2">
+          <FormField
+            control={form.control}
+            name="thesisPhoto"
+            render={() => (
+              <FormItem>
+                <FormLabel>Thesis Photo</FormLabel>
+                <div className="flex items-center gap-x-6">
+                  <FormControl>
+                    <div className="relative">
+                      {thesisPhoto ? (
+                        <img
+                          src={thesisPhoto}
+                          alt="Company Logo"
+                          className="h-20 w-20 rounded-lg border object-contain shadow-sm"
+                        />
+                      ) : (
+                        <div className="text-muted-foreground flex h-20 w-20 items-center justify-center rounded-lg border object-contain shadow-sm">
+                          <Plus />
+                        </div>
+                      )}
+                    </div>
+                  </FormControl>
+                  <div>
+                    <Label
+                      htmlFor="thesisPhoto"
+                      className="hover:bg-accent inline-flex cursor-pointer items-center gap-x-2 rounded-md border px-4 py-2 text-sm font-medium"
+                    >
+                      <Camera className="h-4 w-4" />
+                      Upload
+                    </Label>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      id="thesisPhoto"
+                      onChange={handleChangeLogo}
+                    />
+                  </div>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <div className="grid grid-cols-3 gap-4">
             <FormField
               control={control}
@@ -305,6 +410,7 @@ const ThesisForm = ({ onSubmit, form, onClose, isPending }: Props) => {
             variant={"outline"}
             onClick={() => {
               form.reset();
+              setThesisPhoto(null)
               onClose();
             }}
           >

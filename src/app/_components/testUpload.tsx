@@ -1,37 +1,37 @@
 // components/UploadView.tsx
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { supabase } from '@/utils/supabaseClient'
+import { useState } from "react";
+import { supabase } from "@/utils/supabaseClient";
 
 export default function UploadView() {
-  const [file, setFile] = useState<File | null>(null)
-  const [uploading, setUploading] = useState(false)
-  const [publicUrl, setPublicUrl] = useState('')
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [publicUrl, setPublicUrl] = useState("");
 
   const handleUpload = async () => {
-    if (!file) return alert('Please select a file.')
+    if (!file) return alert("Please select a file.");
 
-    setUploading(true)
+    setUploading(true);
 
-    const filePath = `uploads/${Date.now()}-${file.name}`
+    const filePath = `uploads/${Date.now()}-${file.name}`;
 
     const { data, error } = await supabase.storage
-      .from('thesisvault') // your bucket name
-      .upload(filePath, file)
-console.log(data)
+      .from("thesisvault") // your bucket name
+      .upload(filePath, file);
+    console.log(data);
     if (error) {
-      alert(`Upload failed: ${error.message}`)
+      alert(`Upload failed: ${error.message}`);
     } else {
       const { data } = supabase.storage
-        .from('thesisvault')
-        .getPublicUrl(filePath)
+        .from("thesisvault")
+        .getPublicUrl(filePath);
 
-      setPublicUrl(data.publicUrl)
+      setPublicUrl(data.publicUrl);
     }
 
-    setUploading(false)
-  }
+    setUploading(false);
+  };
 
   return (
     <div className="flex flex-col items-center gap-4">
@@ -41,10 +41,10 @@ console.log(data)
       />
       <button
         onClick={handleUpload}
-        className="bg-green-600 text-white px-4 py-2 rounded"
+        className="rounded bg-green-600 px-4 py-2 text-white"
         disabled={uploading}
       >
-        {uploading ? 'Uploading...' : 'Upload File'}
+        {uploading ? "Uploading..." : "Upload File"}
       </button>
 
       {publicUrl && (
@@ -61,5 +61,5 @@ console.log(data)
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -81,12 +81,13 @@ export const thesesRouter = createTRPCRouter({
         members: z.string(),
         courseCode: z.string(),
         tagIds: z.number().array(),
+        thesisPhoto : z.string()
       }),
     )
     .mutation(
       async ({
         ctx,
-        input: { id, title, abstract, year, members, courseCode, tagIds },
+        input: { id, title, abstract, year, members, courseCode, tagIds, thesisPhoto },
       }) => {
         if (id) {
           await ctx.db.thesesTags.deleteMany({
@@ -103,6 +104,7 @@ export const thesesRouter = createTRPCRouter({
             year: new Date(year),
             members,
             courseCode,
+            thesisPhoto,
             Tags: {
               createMany: {
                 data: tagIds.map((tagId) => ({ tagId })),
@@ -115,6 +117,7 @@ export const thesesRouter = createTRPCRouter({
             year: new Date(year),
             members,
             courseCode,
+            thesisPhoto,
             Tags: {
               createMany: {
                 data: tagIds.map((tagId) => ({ tagId })),

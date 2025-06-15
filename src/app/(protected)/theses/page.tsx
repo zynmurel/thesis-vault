@@ -48,10 +48,8 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 
 function Page() {
-  const thesesIdQueryState = useQueryState(
-    "upsert",
-    parseAsString,
-  );
+  const thesisIdQueryState = useQueryState("upsert", parseAsString);
+  const thesisPhotoQueryState = useQueryState("thesisPhoto", parseAsString);
   const [filterTags, setFilterTags] = useQueryState(
     "tags",
     parseAsArrayOf(parseAsInteger).withDefault([]),
@@ -105,7 +103,9 @@ function Page() {
     setTitle(title);
   };
 
-  const onCreateThesis = () => thesesIdQueryState[1]("create");
+  const onCreateThesis = () => thesisIdQueryState[1]("create");
+
+  const onOpenThesisPhoto = (url: string) => thesisPhotoQueryState[1](url);
 
   // Placeholder filter logic (you can replace this with real logic)
   const filteredTheses = theses;
@@ -198,30 +198,33 @@ function Page() {
               <TableHead>Members</TableHead>
               <TableHead>Year</TableHead>
               <TableHead>Tags</TableHead>
+              <TableHead>Photo</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredTheses?.map((thesis) => {
-              const members = JSON.parse(thesis.members) as {name : string;}[]
-              const membersNameArray = members.map((member)=>member.name)
+              const members = JSON.parse(thesis.members) as { name: string }[];
+              const membersNameArray = members.map((member) => member.name);
               return (
-              <TableRow key={thesis.id}>
-                <TableCell>{thesis.title}</TableCell>
-                <TableCell>{thesis.courseCode}</TableCell>
-                <TableCell>{membersNameArray.join(", ")}</TableCell>
-                <TableCell>{new Date(thesis.year).getFullYear()}</TableCell>
-                <TableCell className="flex flex-wrap gap-1">
-                  {thesis.Tags.map((tag) => (
-                    <Badge
-                      key={tag.Tag.tag}
-                      variant={"outline"}
-                    >
-                      {tag.Tag.tag}
-                    </Badge>
-                  ))}
-                </TableCell>
-              </TableRow>
-            )
+                <TableRow key={thesis.id}>
+                  <TableCell>{thesis.title}</TableCell>
+                  <TableCell>{thesis.courseCode}</TableCell>
+                  <TableCell>{membersNameArray.join(", ")}</TableCell>
+                  <TableCell>{new Date(thesis.year).getFullYear()}</TableCell>
+                  <TableCell className="flex flex-wrap gap-1">
+                    {thesis.Tags.map((tag) => (
+                      <Badge key={tag.Tag.tag} variant={"outline"}>
+                        {tag.Tag.tag}
+                      </Badge>
+                    ))}
+                  </TableCell>
+                  <TableCell>
+                    <Button onClick={()=>onOpenThesisPhoto(thesis.thesisPhoto)} variant={"outline"} size={"sm"} className="text-xs">
+                      View Photo
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
             })}
           </TableBody>
         </Table>
@@ -230,10 +233,12 @@ function Page() {
             <LoaderCircle className="animate-spin" />
           </div>
         )}
-        {!thesesCount && !thesesIsLoading && <div className=" text-muted-foreground text-sm flex items-center justify-center p-5">
-          <p>No theses found</p>
-        </div>}
-        <Separator/>
+        {!thesesCount && !thesesIsLoading && (
+          <div className="text-muted-foreground flex items-center justify-center p-5 text-sm">
+            <p>No theses found</p>
+          </div>
+        )}
+        <Separator />
         <TablePagination thesesCount={thesesCount} />
       </div>
     </div>

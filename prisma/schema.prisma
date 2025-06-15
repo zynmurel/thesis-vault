@@ -68,26 +68,27 @@ model Students {
 }
 
 model Theses {
-    id         String           @id @default(uuid())
-    courseCode String
-    abstract   String
-    title      String
-    members    String
-    year       DateTime
-    createdAt  DateTime         @default(now())
-    updatedAt  DateTime         @updatedAt
-    Course     Course           @relation(fields: [courseCode], references: [code])
-    Tags       ThesesTags[]
-    Reviews    ThesesReviews[]
-    Comments   ThesesComments[]
+    id          String           @id @default(uuid())
+    courseCode  String
+    thesisPhoto String
+    abstract    String
+    title       String
+    members     String
+    year        DateTime
+    createdAt   DateTime         @default(now())
+    updatedAt   DateTime         @updatedAt
+    Course      Course           @relation(fields: [courseCode], references: [code])
+    Tags        ThesesTags[]
+    Reviews     ThesesReviews[]
+    Comments    ThesesComments[]
 }
 
 model Tags {
-    id         Int          @id @default(autoincrement())
-    tag String
-    createdAt  DateTime     @default(now())
-    updatedAt  DateTime     @updatedAt
-    Theses     ThesesTags[]
+    id        Int          @id @default(autoincrement())
+    tag       String
+    createdAt DateTime     @default(now())
+    updatedAt DateTime     @updatedAt
+    Theses    ThesesTags[]
 }
 
 model ThesesTags {
