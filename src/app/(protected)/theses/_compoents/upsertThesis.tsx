@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { api } from "@/trpc/react";
 import { years } from "@/utils/year";
+import { toast } from "sonner";
 
 const thesisSchema = z.object({
   courseCode: z.string(),
@@ -55,11 +56,13 @@ interface Props {
   onSubmit: (values: ThesisFormValues) => void;
   form: UseFormReturn<ThesisFormValues>;
   onClose: () => void;
+  isPending : boolean;
 }
 
 export default function UpsertThesis() {
   const [thesesId, setThesesId] = useQueryState("upsert", parseAsString);
   const isCreate = thesesId === "create";
+  const utils = api.useUtils();
 
   const form = useForm<ThesisFormValues>({
     resolver: zodResolver(thesisSchema),
@@ -67,7 +70,32 @@ export default function UpsertThesis() {
       members: [{ name: "" }],
     },
   });
+
   const onClose = () => setThesesId(null);
+
+  const { mutate, isPending } = api.theses.upsertTheses.useMutation({
+    onSuccess: async () => {
+      await utils.theses.getMany.invalidate();
+      toast("Thesis added", {
+        description: "Your thesis has been saved.",
+      });
+      form.reset()
+      onClose()
+    },
+  });
+
+  const onSubmit = (data: ThesisFormValues) => {
+    mutate({
+      id: thesesId === "ALL" ? "" : String(thesesId),
+      title: data.title,
+      abstract: data.abstract,
+      year: data.year,
+      courseCode: data.courseCode,
+      members: JSON.stringify(data.members),
+      tagIds : data.tags
+    });
+  };
+
   return (
     <Dialog open={!!thesesId} onOpenChange={onClose}>
       <DialogContent className="md:min-w-3xl">
@@ -79,13 +107,13 @@ export default function UpsertThesis() {
               : "Make the necessary changes to update the existing thesis information."}
           </DialogDescription>
         </DialogHeader>
-        <ThesisForm form={form} onSubmit={() => {}} onClose={onClose} />
+        <ThesisForm form={form} onSubmit={onSubmit} onClose={onClose} isPending={isPending} />
       </DialogContent>
     </Dialog>
   );
 }
 
-const ThesisForm = ({ onSubmit, form, onClose }: Props) => {
+const ThesisForm = ({ onSubmit, form, onClose, isPending }: Props) => {
   const { control, handleSubmit } = form;
 
   const { data: courses, isLoading: coursesIsLoading } =
@@ -139,7 +167,6 @@ const ThesisForm = ({ onSubmit, form, onClose }: Props) => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -283,7 +310,7 @@ const ThesisForm = ({ onSubmit, form, onClose }: Props) => {
           >
             Cancel
           </Button>
-          <Button type="submit" className="">
+          <Button type="submit" disabled={isPending}>
             Submit
             <SendHorizonal />
           </Button>

@@ -8,6 +8,7 @@ import {
 import LoginForm from "./_components.tsx/login-form";
 import { auth } from "@/server/auth";
 import { redirect } from "next/navigation";
+import { ModeToggle } from "@/app/(protected)/_components/mode-toggle";
 
 export default async function Page() {
     const session = await auth();
@@ -16,7 +17,7 @@ export default async function Page() {
     redirect("/");
   }
   return (
-    <div className="relative grid min-h-screen bg-white lg:grid-cols-2">
+    <div className="relative grid min-h-screen bg-background lg:grid-cols-2">
       <div className="absolute top-3 left-3">
         <div className="flex flex-row items-center gap-2">
           <img
@@ -54,12 +55,12 @@ export default async function Page() {
 
       <div className="flex flex-col items-center justify-center">
         <div className="flex min-w-full flex-col items-center justify-center gap-5 p-2 sm:min-w-lg">
-          <Card className="w-full max-w-lg gap-5 border-none shadow-none">
+          <Card className="w-full max-w-lg gap-5 border-none shadow-none bg-background">
             <CardHeader className="gap-0">
-              <div className="text-primary mb-5 text-3xl font-bold">
+              <div className="text mb-5 text-3xl font-bold">
                 Thesis Vault
               </div>
-              <CardTitle className="text-primary/80 text-lg font-semibold sm:text-xl">
+              <CardTitle className=" text-lg font-semibold sm:text-xl">
                 Welcome back, Admin!
               </CardTitle>
               <CardDescription>
@@ -72,6 +73,7 @@ export default async function Page() {
           </Card>
         </div>
       </div>
+      <div className=" absolute bottom-5 sm:top-5 right-5"><ModeToggle/></div>
     </div>
   );
 }

@@ -44,6 +44,8 @@ import {
 } from "@/components/ui/pagination";
 import { api } from "@/trpc/react";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
 function Page() {
   const thesesIdQueryState = useQueryState(
@@ -199,24 +201,28 @@ function Page() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredTheses?.map((thesis) => (
+            {filteredTheses?.map((thesis) => {
+              const members = JSON.parse(thesis.members) as {name : string;}[]
+              const membersNameArray = members.map((member)=>member.name)
+              return (
               <TableRow key={thesis.id}>
                 <TableCell>{thesis.title}</TableCell>
                 <TableCell>{thesis.courseCode}</TableCell>
-                <TableCell>{thesis.members}</TableCell>
+                <TableCell>{membersNameArray.join(", ")}</TableCell>
                 <TableCell>{new Date(thesis.year).getFullYear()}</TableCell>
                 <TableCell className="flex flex-wrap gap-1">
                   {thesis.Tags.map((tag) => (
-                    <span
+                    <Badge
                       key={tag.Tag.tag}
-                      className="bg-muted text-muted-foreground rounded px-2 py-0.5 text-xs"
+                      variant={"outline"}
                     >
                       {tag.Tag.tag}
-                    </span>
+                    </Badge>
                   ))}
                 </TableCell>
               </TableRow>
-            ))}
+            )
+            })}
           </TableBody>
         </Table>
         {thesesIsLoading && (

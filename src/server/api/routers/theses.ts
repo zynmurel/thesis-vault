@@ -1,9 +1,8 @@
 import { z } from "zod";
 
-import {
-  createTRPCRouter,
-  protectedProcedure,
-} from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { title } from "process";
+import { years } from "@/utils/year";
 
 export const thesesRouter = createTRPCRouter({
   getMany: protectedProcedure
@@ -18,16 +17,20 @@ export const thesesRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input: { skip, take, courseCode, title, tags } }) => {
       const whereCourseCode = courseCode === "ALL" ? {} : { courseCode };
-      console.log({ skip, take, courseCode, title, tags });
+      const whereTags = tags.length
+        ? {
+            Tags: {
+              some: {
+                tagId: { in: tags },
+              },
+            },
+          }
+        : {};
       return await ctx.db.theses.findMany({
         where: {
-          title,
+          title: { contains: title, mode: "insensitive" },
           ...whereCourseCode,
-          Tags: {
-            some: {
-              tagId: { in: tags },
-            },
-          },
+          ...whereTags,
         },
         skip,
         take,
@@ -50,18 +53,75 @@ export const thesesRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input: { courseCode, title, tags } }) => {
       const whereCourseCode = courseCode === "ALL" ? {} : { courseCode };
-      const whereTags = tags.length ? {Tags: {
-            some: {
-              tagId: { in: tags },
+      const whereTags = tags.length
+        ? {
+            Tags: {
+              some: {
+                tagId: { in: tags },
+              },
             },
-          }} : {}
+          }
+        : {};
       console.log({ courseCode, title, tags });
       return await ctx.db.theses.count({
         where: {
-          title : { contains : title, mode : "insensitive" },
+          title: { contains: title, mode: "insensitive" },
           ...whereCourseCode,
-          ...whereTags
+          ...whereTags,
         },
       });
     }),
+  upsertTheses: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().optional(),
+        title: z.string(),
+        abstract: z.string(),
+        year: z.string(),
+        members: z.string(),
+        courseCode: z.string(),
+        tagIds: z.number().array(),
+      }),
+    )
+    .mutation(
+      async ({
+        ctx,
+        input: { id, title, abstract, year, members, courseCode, tagIds },
+      }) => {
+        if (id) {
+          await ctx.db.thesesTags.deleteMany({
+            where: {
+              thesisId: id,
+            },
+          });
+        }
+        return await ctx.db.theses.upsert({
+          where: { id: id || "" },
+          create: {
+            title,
+            abstract,
+            year: new Date(year),
+            members,
+            courseCode,
+            Tags: {
+              createMany: {
+                data: tagIds.map((tagId) => ({ tagId })),
+              },
+            },
+          },
+          update: {
+            title,
+            abstract,
+            year: new Date(year),
+            members,
+            courseCode,
+            Tags: {
+              createMany: {
+                data: tagIds.map((tagId) => ({ tagId })),
+              },
+            },
+          },
+        });
+      },
+    ),
 });
