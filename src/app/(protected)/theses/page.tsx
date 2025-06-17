@@ -23,11 +23,10 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   BookOpenText,
-  ChevronLeft,
-  ChevronRight,
   ListFilterPlus,
   LoaderCircle,
   Plus,
+  X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -37,15 +36,11 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-} from "@/components/ui/pagination";
 import { api } from "@/trpc/react";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import type { Course, Tags } from "@prisma/client";
+import TablePagination from "../_components/table-pagination";
 
 function Page() {
   const thesisIdQueryState = useQueryState("upsert", parseAsString);
@@ -108,7 +103,56 @@ function Page() {
   const onOpenThesisPhoto = (url: string) => thesisPhotoQueryState[1](url);
 
   // Placeholder filter logic (you can replace this with real logic)
-  const filteredTheses = theses;
+
+  const DisplayFilter = ({
+    tagIds,
+    courseCode,
+    tags,
+    courses,
+  }: {
+    tagIds: number[];
+    courseCode?: string;
+    tags: Tags[];
+    courses: Course[];
+  }) => {
+    const foundCourse = courses.find((c) => c.code === courseCode);
+    return foundCourse || tagIds.length ? (
+      <div>
+        <p className=" text-xs text-muted-foreground mb-1">Filters</p>
+        <div className="flex flex-row flex-wrap gap-1">
+          {foundCourse && (
+            <Badge>
+              {foundCourse.title}
+              <div
+                className="size-3.5 cursor-pointer"
+                onClick={() => onSelectCourse("ALL")}
+              >
+                <X className="size-3.5" />
+              </div>
+            </Badge>
+          )}
+          {tagIds.map((tag) => {
+            const foundTag = tags.find((t) => t.id === tag);
+            return foundTag ? (
+              <Badge>
+                {foundTag.tag}
+                <div
+                  className="size-3.5 cursor-pointer"
+                  onClick={() => toggleTag(tag)}
+                >
+                  <X className="size-3.5" />
+                </div>
+              </Badge>
+            ) : (
+              <></>
+            );
+          })}
+        </div>
+      </div>
+    ) : (
+      <></>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -122,73 +166,80 @@ function Page() {
         </div>
       </div>
       <div className="flex flex-row justify-between gap-2">
-        <div className="flex flex-row gap-2">
+        <div className="flex w-full flex-col gap-2 lg:w-auto lg:flex-row">
           <Input
             value={title}
             onChange={(e) => onSearchTitle(e.target.value)}
-            className="md:min-w-80"
+            className="w-full xl:min-w-80"
             placeholder="Search theses title"
           />
-          <Select onValueChange={(e) => onSelectCourse(e)} defaultValue="ALL">
-            <SelectTrigger className="w-full min-w-60">
-              <div className="max-w-44 truncate">
-                {courseCode === "ALL"
-                  ? "All Courses"
-                  : courses?.find((c) => c.code === courseCode)?.title}
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {coursesIsLoading ? (
-                  <LoaderCircle className="animate-spin" />
-                ) : (
-                  <div>
-                    <SelectItem value={"ALL"}>All Courses</SelectItem>
-                    {courses?.map((course) => (
-                      <SelectItem value={course.code} key={course.code}>
-                        <div className="flex flex-row gap-1">
-                          <span>{course.title}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </div>
-                )}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline">
-                <ListFilterPlus />
-                Filters
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64">
-              <h4 className="mb-2 text-sm font-medium">Filter by Tags</h4>
-              <div className="flex max-h-60 flex-col gap-2 overflow-auto">
-                {tagsIsLoading ? (
-                  <LoaderCircle className="animate-spin" />
-                ) : (
-                  tags?.map((tag) => (
-                    <label key={tag.id} className="flex items-center gap-2">
-                      <Checkbox
-                        checked={filterTags?.includes(tag.id)}
-                        onCheckedChange={() => toggleTag(tag.id)}
-                      />
-                      <span className="text-sm">{tag.tag}</span>
-                    </label>
-                  ))
-                )}
-              </div>
-            </PopoverContent>
-          </Popover>
+          <div className="flex w-full flex-row gap-2">
+            <Select onValueChange={(e) => onSelectCourse(e)} value={courseCode}>
+              <SelectTrigger className="flex-1">
+                <div className="max-w-44 truncate">
+                  {courseCode === "ALL"
+                    ? "All Courses"
+                    : courses?.find((c) => c.code === courseCode)?.title}
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {coursesIsLoading ? (
+                    <LoaderCircle className="animate-spin" />
+                  ) : (
+                    <div>
+                      <SelectItem value={"ALL"}>All Courses</SelectItem>
+                      {courses?.map((course) => (
+                        <SelectItem value={course.code} key={course.code}>
+                          <div className="flex flex-row gap-1">
+                            <span>{course.title}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </div>
+                  )}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline">
+                  <ListFilterPlus />
+                  Filters
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64">
+                <h4 className="mb-2 text-sm font-medium">Filter by Tags</h4>
+                <div className="flex max-h-60 flex-col gap-2 overflow-auto">
+                  {tagsIsLoading ? (
+                    <LoaderCircle className="animate-spin" />
+                  ) : (
+                    tags?.map((tag) => (
+                      <label key={tag.id} className="flex items-center gap-2">
+                        <Checkbox
+                          checked={filterTags?.includes(tag.id)}
+                          onCheckedChange={() => toggleTag(tag.id)}
+                        />
+                        <span className="text-sm">{tag.tag}</span>
+                      </label>
+                    ))
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
         <Button onClick={onCreateThesis}>
           <Plus />
           <p className="hidden pr-1 sm:flex">Thesis</p>
         </Button>
       </div>
-
+      <DisplayFilter
+        tagIds={filterTags}
+        courseCode={courseCode}
+        tags={tags || []}
+        courses={courses || []}
+      />
       <div className="rounded-lg border p-2 py-1">
         <Table>
           <TableHeader>
@@ -202,7 +253,7 @@ function Page() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredTheses?.map((thesis) => {
+            {theses?.map((thesis) => {
               const members = JSON.parse(thesis.members) as { name: string }[];
               const membersNameArray = members.map((member) => member.name);
               return (
@@ -219,7 +270,12 @@ function Page() {
                     ))}
                   </TableCell>
                   <TableCell>
-                    <Button onClick={()=>onOpenThesisPhoto(thesis.thesisPhoto)} variant={"outline"} size={"sm"} className="text-xs">
+                    <Button
+                      onClick={() => onOpenThesisPhoto(thesis.thesisPhoto)}
+                      variant={"outline"}
+                      size={"sm"}
+                      className="text-xs"
+                    >
                       View Photo
                     </Button>
                   </TableCell>
@@ -239,69 +295,10 @@ function Page() {
           </div>
         )}
         <Separator />
-        <TablePagination thesesCount={thesesCount} />
+        <TablePagination count={thesesCount} />
       </div>
     </div>
   );
 }
-
-const TablePagination = ({ thesesCount = 0 }: { thesesCount?: number }) => {
-  const [pagination, setPagination] = useQueryStates(
-    {
-      skip: parseAsInteger.withDefault(0),
-      take: parseAsInteger.withDefault(10),
-    },
-    {
-      history: "push",
-    },
-  );
-
-  const onNext = () => {
-    setPagination((prev) => {
-      return { ...prev, skip: prev.skip + prev.take };
-    });
-  };
-
-  const onPrev = () => {
-    setPagination((prev) => ({ ...prev, skip: prev.skip - prev.take }));
-  };
-  return (
-    <Pagination className="mt-1 flex justify-end">
-      <PaginationContent>
-        <PaginationItem>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-sm"
-            disabled={pagination.skip < 1}
-            onClick={onPrev}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Previous
-          </Button>
-        </PaginationItem>
-        <div className="text-muted-foreground text-sm">
-          <p>{`${thesesCount ? Math.ceil(pagination.skip / pagination.take) + 1 : 0} of ${thesesCount ? Math.ceil(thesesCount / pagination.take) : 0}`}</p>
-        </div>
-        <PaginationItem>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-sm"
-            disabled={
-              thesesCount
-                ? pagination.skip + pagination.take > thesesCount
-                : true
-            }
-            onClick={onNext}
-          >
-            Next
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
-  );
-};
 
 export default Page;

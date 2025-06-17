@@ -1,4 +1,4 @@
-import { IconBooks, IconBookUpload, IconLayoutDashboard, IconReport, IconSettings } from "@tabler/icons-react";
+import { IconBooks, IconBookUpload, IconLayoutDashboard, IconReport, IconSettings, IconUsers } from "@tabler/icons-react";
 
 export const menu = [
     {
@@ -18,6 +18,12 @@ export const menu = [
       key : "theses",
       url: "/theses",
       icon: IconBooks,
+    },
+    {
+      title: "Students",
+      key : "students",
+      url: "/students",
+      icon: IconUsers,
     },
     {
       title: "Reports",

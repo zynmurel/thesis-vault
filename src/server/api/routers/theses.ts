@@ -1,8 +1,6 @@
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import { title } from "process";
-import { years } from "@/utils/year";
 
 export const thesesRouter = createTRPCRouter({
   getMany: protectedProcedure

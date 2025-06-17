@@ -51,17 +51,15 @@ model Students {
     id            String        @id @default(uuid())
     courseCode    String
     studentId     String        @unique
-    email         String        @unique
+    email         String?       
     password      String
     firstName     String
     middleName    String?
     lastName      String
-    contactNumber String?
-    address       String?
     gender        StudentGender
     createdAt     DateTime      @default(now())
     updatedAt     DateTime      @updatedAt
-    Course        Course        @relation(fields: [courseCode], references: [code])
+    Course        Course?       @relation(fields: [courseCode], references: [code])
 
     Reviews  ThesesReviews[]
     Comments ThesesComments[]

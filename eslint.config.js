@@ -29,6 +29,8 @@ export default tseslint.config(
     "@typescript-eslint/no-empty-interface": "off",
     "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-unsafe-argument": "off",
+    "@typescript-eslint/dot-notation" : "off",
+    "@typescript-eslint/no-unused-expressions":"off",
     "@typescript-eslint/non-nullable-type-assertion-style": "off",
     "@typescript-eslint/no-floating-promises": "off",
     "@typescript-eslint/no-unnecessary-type-assertion" : "off",

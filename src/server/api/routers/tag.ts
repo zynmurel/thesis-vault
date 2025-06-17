@@ -6,6 +6,10 @@ import {
 
 export const tagsRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {
-    return await ctx.db.tags.findMany()
+    return await ctx.db.tags.findMany({
+      orderBy : {
+        tag : "asc"
+      }
+    })
   })
 });
