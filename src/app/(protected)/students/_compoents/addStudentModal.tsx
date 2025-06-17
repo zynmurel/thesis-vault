@@ -85,7 +85,7 @@ export default function AddStudentModal() {
 
   const onSubmit = (values: FormValues) => {
     mutate({
-      id : modal,
+      id : modal || undefined,
       ...values
     })
   };

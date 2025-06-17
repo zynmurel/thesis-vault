@@ -42,6 +42,7 @@ export const studentsRouter = createTRPCRouter({
   upsertStudent: protectedProcedure
     .input(
       z.object({
+        id: z.string().optional(),
         courseCode: z.string(),
         studentId: z.string(),
         firstName: z.string(),
@@ -54,8 +55,9 @@ export const studentsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const hashedPassword = await hashPassword("Default@123")
       return await ctx.db.students.upsert({
-        where: { studentId: input.studentId },
+        where: { id: input.id || "" },
         update: {
+          studentId: input.studentId,
           courseCode: input.courseCode,
           firstName: input.firstName,
           middleName: input.middleName,
@@ -80,7 +82,6 @@ export const studentsRouter = createTRPCRouter({
       z.object({
         students: z.array(
           z.object({
-            id: z.string().optional(),
             courseCode: z.string(),
             studentId: z.string(),
             firstName: z.string(),
@@ -98,7 +99,7 @@ export const studentsRouter = createTRPCRouter({
         return await Promise.all(
           students.map((student) =>
             tx.students.upsert({
-              where: { id: student.id || "" },
+              where: { studentId: student.studentId },
               update: {
                 studentId : student.studentId,
                 courseCode: student.courseCode,
