@@ -128,7 +128,7 @@ export default function AddStudentModal() {
                         <SelectTrigger className="w-full">
                           <div className="truncate">
                             {courses?.find((c) => c.code === field.value)
-                              ?.title || "Select Course"}
+                              ?.title || "Select Program"}
                           </div>
                         </SelectTrigger>
                       </FormControl>

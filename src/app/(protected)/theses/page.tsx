@@ -26,6 +26,7 @@ import {
   ListFilterPlus,
   LoaderCircle,
   Plus,
+  QrCode,
   X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -43,8 +44,9 @@ import type { Course, Tags } from "@prisma/client";
 import TablePagination from "../_components/table-pagination";
 
 function Page() {
+  const [_theses, setTheses] = useQueryState("thesesQR",parseAsArrayOf(parseAsString).withDefault([]));
   const thesisIdQueryState = useQueryState("upsert", parseAsString);
-  const thesisPhotoQueryState = useQueryState("thesisPhoto", parseAsString);
+  const [_thesisPhoto, setThesisPhoto] = useQueryState("thesisPhoto", parseAsString);
   const [filterTags, setFilterTags] = useQueryState(
     "tags",
     parseAsArrayOf(parseAsInteger).withDefault([]),
@@ -100,7 +102,7 @@ function Page() {
 
   const onCreateThesis = () => thesisIdQueryState[1]("create");
 
-  const onOpenThesisPhoto = (url: string) => thesisPhotoQueryState[1](url);
+  const onOpenThesisPhoto = (url: string) => setThesisPhoto(url);
 
   // Placeholder filter logic (you can replace this with real logic)
 
@@ -178,7 +180,7 @@ function Page() {
               <SelectTrigger className="flex-1">
                 <div className="max-w-44 truncate">
                   {courseCode === "ALL"
-                    ? "All Courses"
+                    ? "All Programs"
                     : courses?.find((c) => c.code === courseCode)?.title}
                 </div>
               </SelectTrigger>
@@ -188,7 +190,7 @@ function Page() {
                     <LoaderCircle className="animate-spin" />
                   ) : (
                     <div>
-                      <SelectItem value={"ALL"}>All Courses</SelectItem>
+                      <SelectItem value={"ALL"}>All Programs</SelectItem>
                       {courses?.map((course) => (
                         <SelectItem value={course.code} key={course.code}>
                           <div className="flex flex-row gap-1">
@@ -276,7 +278,17 @@ function Page() {
                       size={"sm"}
                       className="text-xs"
                     >
-                      View Photo
+                      View
+                    </Button>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      onClick={() => setTheses([thesis.id, thesis.title])}
+                      variant={"outline"}
+                      size={"sm"}
+                      className="text-xs"
+                    >
+                      <QrCode/>
                     </Button>
                   </TableCell>
                 </TableRow>

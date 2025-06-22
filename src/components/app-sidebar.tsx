@@ -20,9 +20,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem className="flex flex-row items-center gap-2 p-2 py-0">
-            <BookKey className="!size-7" />
+            {/* <BookKey className="!size-7" /> */}
             <div>
-              <span className="text-lg font-semibold">ThesisVault</span>
+              <span className="text-lg font-bold uppercase">Thesis Vault</span>
               <p className=" text-xs -mt-1 font-medium text-secondary/90">NWSSU (CCIS)</p>
             </div>
           </SidebarMenuItem>

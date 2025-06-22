@@ -21,7 +21,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { parseAsString, useQueryState } from "nuqs";
+import {
+  parseAsArrayOf,
+  parseAsString,
+  useQueryState,
+} from "nuqs";
 import {
   Camera,
   LoaderCircle,
@@ -73,6 +77,9 @@ interface Props {
 
 export default function UpsertThesis() {
   const [thesesId, setThesesId] = useQueryState("upsert", parseAsString);
+
+  const [_, setTheses] = useQueryState("thesesQR", parseAsArrayOf(parseAsString).withDefault([]));
+
   const [thesisPhoto, setThesisPhoto] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const isCreate = thesesId === "create";
@@ -88,13 +95,14 @@ export default function UpsertThesis() {
   const onClose = () => setThesesId(null);
 
   const { mutate, isPending } = api.theses.upsertTheses.useMutation({
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       await utils.theses.getMany.invalidate();
       toast("Thesis added", {
         description: "Your thesis has been saved.",
       });
       form.reset();
-      setThesisPhoto(null)
+      onSetThesesData({ id: data.id, title: data.title });
+      setThesisPhoto(null);
       onClose();
     },
     onSettled: () => setIsLoading(false),
@@ -123,6 +131,10 @@ export default function UpsertThesis() {
         thesisPhoto,
       });
     }
+  };
+
+  const onSetThesesData = ({ id, title }: { id: string; title: string }) => {
+    setTheses([id, title]);
   };
 
   return (
@@ -300,7 +312,7 @@ const ThesisForm = ({
                     <SelectTrigger className="w-full">
                       <div className="truncate">
                         {courses?.find((c) => c.code === field.value)?.title ||
-                          "Select Course"}
+                          "Select Program"}
                       </div>
                     </SelectTrigger>
                   </FormControl>
@@ -410,7 +422,7 @@ const ThesisForm = ({
             variant={"outline"}
             onClick={() => {
               form.reset();
-              setThesisPhoto(null)
+              setThesisPhoto(null);
               onClose();
             }}
           >

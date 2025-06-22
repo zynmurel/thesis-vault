@@ -34,18 +34,18 @@ export default async function Page() {
           </div>
         </div>
       </div>
-      <div className="bg-primary relative hidden flex-col items-center justify-center overflow-hidden px-5 sm:px-10 lg:flex">
+      <div className="bg-secondary/90 relative hidden flex-col items-center justify-center overflow-hidden px-5 sm:px-10 lg:flex">
         <img
           src="/images/nwssu-ccis-logo.png"
           className="w-60 object-contain"
         />
-        <p className="pt-4 text-center text-2xl font-semibold text-white uppercase xl:text-3xl">
+        <p className="pt-4 text-center text-2xl text-primary font-semibold  uppercase xl:text-3xl">
           Northwest Samar State University
         </p>
-        <p className="text-secondary/90 text-center text-lg uppercase xl:text-xl">
+        <p className=" text-primary text-center text-lg uppercase xl:text-xl">
           College of Computing and Information Science
         </p>
-        <p className="mt-2 px-20 text-center text-white/90">
+        <p className="mt-2 px-20 text-primary/80 text-center ">
           <span>Thesis Vault</span> is an archiving system for student
           manuscripts at CCIS. Admins log in to manage and track borrowed
           theses.

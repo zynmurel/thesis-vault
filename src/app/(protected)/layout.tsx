@@ -1,6 +1,7 @@
 import { auth } from "@/server/auth";
 import { redirect } from "next/navigation";
 import MainLayout from "./_components/main-layout";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export default async function ProtectedLayout({
   children,
@@ -13,5 +14,14 @@ export default async function ProtectedLayout({
     redirect("/login");
   }
 
-  return <MainLayout>{children}</MainLayout>;
+  return (
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <MainLayout>{children}</MainLayout>
+    </ThemeProvider>
+  );
 }

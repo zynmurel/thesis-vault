@@ -94,7 +94,7 @@ function Page() {
               <SelectTrigger className="flex-1">
                 <div className=" truncate">
                   {courseCode === "ALL"
-                    ? "All Courses"
+                    ? "All Programs"
                     : courses?.find((c) => c.code === courseCode)?.title}
                 </div>
               </SelectTrigger>
@@ -104,7 +104,7 @@ function Page() {
                     <LoaderCircle className="animate-spin" />
                   ) : (
                     <div>
-                      <SelectItem value={"ALL"}>All Courses</SelectItem>
+                      <SelectItem value={"ALL"}>All Programs</SelectItem>
                       {courses?.map((course) => (
                         <SelectItem value={course.code} key={course.code}>
                           <div className="flex flex-row gap-1">
@@ -137,7 +137,7 @@ function Page() {
               <TableHead>Student ID</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Course</TableHead>
+              <TableHead>Program</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>

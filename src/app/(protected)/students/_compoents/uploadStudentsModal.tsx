@@ -22,7 +22,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Info, SendHorizonal, Upload } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Info, LoaderCircle, SendHorizonal, Upload } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 import { useRef, useState } from "react";
 import * as XLSX from "xlsx";
@@ -34,6 +42,10 @@ export default function UploadStudentsModal() {
   const utils = api.useUtils();
   const [modal, setModal] = useQueryState("upload", parseAsString);
   const [excelData, setExcelData] = useState<Students[]>([]);
+  const [courseCode, setCourseCode] = useState<string | null>(null);
+
+  const { data: courses, isLoading: coursesIsLoading } =
+    api.courses.getAll.useQuery();
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -54,7 +66,6 @@ export default function UploadStudentsModal() {
         const headers = rows[0] as string[];
 
         const requiredHeaders = [
-          "Course Code",
           "Student ID",
           "First Name",
           "Last Name",
@@ -75,7 +86,6 @@ export default function UploadStudentsModal() {
         }
 
         const json = XLSX.utils.sheet_to_json(sheet as XLSX.WorkSheet) as {
-          "Course Code": string;
           "Student ID": string;
           "First Name": string;
           "Middle Name"?: string | null;
@@ -85,7 +95,6 @@ export default function UploadStudentsModal() {
         }[];
 
         const students = json.map((data) => ({
-          courseCode: data["Course Code"],
           studentId: data["Student ID"],
           firstName: data["First Name"],
           middleName: data["Middle Name"],
@@ -107,34 +116,38 @@ export default function UploadStudentsModal() {
   };
 
   const { mutate, isPending } = api.students.upsertManyStudents.useMutation({
-    onSuccess : async () => {
+    onSuccess: async () => {
       await utils.students.getMany.invalidate();
-      onClose()
-      setExcelData([])
+      onClose();
+      setExcelData([]);
+      setCourseCode(null)
       toast.success("Add Success", {
-        description : "All students added.",
-      })
+        description: "All students added.",
+      });
     },
-    onError : () => {
+    onError: () => {
       toast.error("Failed", {
-        description : "Failed to add students. Recheck file format",
-      })
-    }
-  })
+        description: "Failed to add students. Recheck file format",
+      });
+    },
+  });
 
   const onClose = () => setModal(null);
 
   const onAddStudents = () => {
-    excelData.length && mutate({ students : excelData.map((stud)=>({
-      studentId : stud.studentId,
-      courseCode : stud.courseCode,
-      firstName : stud.firstName,
-      middleName : stud.middleName || undefined,
-      lastName : stud.lastName,
-      email : stud.email || undefined,
-      gender : stud.gender,
-    })) })
-  }
+    excelData.length && courseCode &&
+      mutate({
+        students: excelData.map((stud) => ({
+          studentId: stud.studentId,
+          courseCode: courseCode,
+          firstName: stud.firstName,
+          middleName: stud.middleName || undefined,
+          lastName: stud.lastName,
+          email: stud.email || undefined,
+          gender: stud.gender,
+        })),
+      });
+  };
 
   return (
     <Dialog open={modal === "open"} onOpenChange={onClose}>
@@ -147,10 +160,10 @@ export default function UploadStudentsModal() {
             Upload students using a .xlsx, .xls, or .csv file.
           </DialogDescription>
         </DialogHeader>
-        {excelData.length ? (
+        {(excelData.length && courseCode) ? (
           <>
             <div className="flex w-full flex-row items-end justify-between">
-              <p className="text-sm font-bold">{excelData.length} Students</p>
+              <p className="text-sm font-bold">{courses?.find(c=>c.code === courseCode)?.title} - {excelData.length} Students</p>
               <Button
                 onClick={() => setExcelData([])}
                 variant={"outline"}
@@ -161,11 +174,10 @@ export default function UploadStudentsModal() {
               </Button>
             </div>
             <div className="w-full overflow-auto">
-              <div className="text-foreground max-h-[60vh] sm:max-h-[70vh] overflow-auto rounded-md border text-xs">
+              <div className="text-foreground max-h-[60vh] overflow-auto rounded-md border text-xs sm:max-h-[70vh]">
                 <Table className="relative max-w-full text-xs">
                   <TableHeader className="top-0">
                     <TableRow>
-                      <TableHead>Course Code</TableHead>
                       <TableHead>Student ID</TableHead>
                       <TableHead>First Name</TableHead>
                       <TableHead>Middle Name</TableHead>
@@ -178,12 +190,13 @@ export default function UploadStudentsModal() {
                     {excelData.map((student) => {
                       return (
                         <TableRow key={student.id}>
-                          <TableCell>{student.courseCode}</TableCell>
                           <TableCell>{student.studentId}</TableCell>
                           <TableCell>{student.firstName}</TableCell>
                           <TableCell>{student.middleName}</TableCell>
                           <TableCell>{student.lastName}</TableCell>
-                          <TableCell className=" capitalize">{student.gender.toLowerCase()}</TableCell>
+                          <TableCell className="capitalize">
+                            {student.gender.toLowerCase()}
+                          </TableCell>
                           <TableCell>{student.email}</TableCell>
                         </TableRow>
                       );
@@ -191,14 +204,21 @@ export default function UploadStudentsModal() {
                   </TableBody>
                 </Table>
               </div>
-                <div className="flex w-full justify-between mt-5">
-                  <p className=" text-primary/80 text-xs">If a student with the same Student ID already exists, their information will be updated instead of creating a duplicate.</p>
+              <div className="mt-5 flex w-full justify-between">
+                <p className="text-primary/80 text-xs">
+                  If a student with the same Student ID already exists, their
+                  information will be updated instead of creating a duplicate.
+                </p>
 
-                  <Button type="submit" onClick={onAddStudents} disabled={isPending}>
-                    Submit
-                    <SendHorizonal />
-                  </Button>
-                </div>
+                <Button
+                  type="submit"
+                  onClick={onAddStudents}
+                  disabled={isPending}
+                >
+                  Submit
+                  <SendHorizonal />
+                </Button>
+              </div>
             </div>
           </>
         ) : (
@@ -219,7 +239,6 @@ export default function UploadStudentsModal() {
                       <Table className="text-xs">
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Course Code</TableHead>
                             <TableHead>Student ID</TableHead>
                             <TableHead>First Name</TableHead>
                             <TableHead>Middle Name</TableHead>
@@ -230,7 +249,6 @@ export default function UploadStudentsModal() {
                         </TableHeader>
                         <TableBody>
                           <TableRow>
-                            <TableCell>BSIT</TableCell>
                             <TableCell>2023002</TableCell>
                             <TableCell>Maria</TableCell>
                             <TableCell>Elsa</TableCell>
@@ -245,8 +263,34 @@ export default function UploadStudentsModal() {
                 </Tooltip>
               </div>
             </TooltipProvider>
-
-            <CustomFileUpload handleFile={handleFile} />
+            <div className="flex flex-row items-center gap-2 w-full mt-2">
+              <Select
+                onValueChange={(e) => setCourseCode(e)}
+                value={courseCode || undefined}
+              >
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Select Program"/>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {coursesIsLoading ? (
+                      <LoaderCircle className="animate-spin" />
+                    ) : (
+                      <div>
+                        {courses?.map((course) => (
+                          <SelectItem value={course.code} key={course.code}>
+                            <div className="flex flex-row gap-1">
+                              <span>{course.title}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </div>
+                    )}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              <CustomFileUpload disabled={!courseCode} handleFile={handleFile} />
+            </div>
           </div>
         )}
       </DialogContent>
@@ -256,8 +300,10 @@ export default function UploadStudentsModal() {
 
 export function CustomFileUpload({
   handleFile,
+  disabled = false
 }: {
   handleFile: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  disabled?:boolean
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -272,11 +318,13 @@ export function CustomFileUpload({
         type="file"
         accept=".xlsx, .xls, .csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, text/csv"
         onChange={handleFile}
+        disabled={disabled}
         className="hidden"
       />
       <Button
         type="button"
         onClick={triggerInput}
+        disabled={disabled}
         className="flex items-center gap-2"
       >
         <Upload className="h-4 w-4" />

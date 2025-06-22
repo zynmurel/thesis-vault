@@ -5,7 +5,6 @@ import { Geist } from "next/font/google";
 
 import { TRPCReactProvider } from "@/trpc/react";
 import { SessionProvider } from "next-auth/react";
-import { ThemeProvider } from "@/components/theme-provider";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -26,19 +25,12 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${geist.variable}`}>
       <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Toaster />
-          <NuqsAdapter>
-            <SessionProvider>
-              <TRPCReactProvider>{children}</TRPCReactProvider>
-            </SessionProvider>
-          </NuqsAdapter>
-        </ThemeProvider>
+        <Toaster />
+        <NuqsAdapter>
+          <SessionProvider>
+            <TRPCReactProvider>{children}</TRPCReactProvider>
+          </SessionProvider>
+        </NuqsAdapter>
       </body>
     </html>
   );
