@@ -17,9 +17,9 @@ export default function MainLayout({
       }
     >
       <AppSidebar variant="inset" />
-      <div className=" bg-gradient-to-r from-sidebar dark:to-green-900/50 to-green-700  flex h-screen max-h-screen w-full flex-col md:p-2">
+      <div className=" bg-gradient-to-r from-sidebar dark:to-green-900/50 to-sidebar  flex h-screen max-h-screen w-full flex-col md:p-2">
         <div className="h-full w-full overflow-hidden md:rounded-xl">
-          <div className="relative flex h-full flex-col bg-background">
+          <div className="relative flex h-full flex-col bg-background/95">
             <SiteHeader />
             <div className="flex flex-1 flex-col overflow-y-scroll p-5">
               {children}

@@ -34,7 +34,7 @@ export default async function Page() {
           </div>
         </div>
       </div>
-      <div className="bg-secondary/90 relative hidden flex-col items-center justify-center overflow-hidden px-5 sm:px-10 lg:flex">
+      <div className="bg-secondary relative hidden flex-col items-center justify-center overflow-hidden px-5 sm:px-10 lg:flex">
         <img
           src="/images/nwssu-ccis-logo.png"
           className="w-60 object-contain"

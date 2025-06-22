@@ -30,16 +30,16 @@ export function NavUser() {
 
   return (
     <SidebarMenu>
-      <SidebarMenuItem className=" border border-accent/45 rounded-lg">
+      <SidebarMenuItem className=" border border-foreground/20 rounded-lg">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="text-foreground h-8 w-8 rounded-lg grayscale">
+              <Avatar className="text-foreground h-8 w-8 rounded-lg text-white">
                 <AvatarImage src={undefined} alt={data?.user.name || ""} />
-                <AvatarFallback className="rounded-lg">
+                <AvatarFallback className="rounded-lg bg-primary">
                   {data?.user.name?.[0]}
                 </AvatarFallback>
               </Avatar>

@@ -20,6 +20,7 @@ export default async function ProtectedLayout({
       defaultTheme="system"
       enableSystem
       disableTransitionOnChange
+      forcedTheme="light"
     >
       <MainLayout>{children}</MainLayout>
     </ThemeProvider>

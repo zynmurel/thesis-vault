@@ -11,7 +11,6 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { BookKey } from "lucide-react";
 import { menu } from "@/lib/const/sidebar-menu";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -22,8 +21,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem className="flex flex-row items-center gap-2 p-2 py-0">
             {/* <BookKey className="!size-7" /> */}
             <div>
-              <span className="text-lg font-bold uppercase">Thesis Vault</span>
-              <p className=" text-xs -mt-1 font-medium text-secondary/90">NWSSU (CCIS)</p>
+              <span className="text-lg font-black uppercase text-foreground/80">Thesis Vault</span>
+              <p className=" text-xs -mt-1 font-medium text-priary">NWSSU (CCIS)</p>
             </div>
           </SidebarMenuItem>
         </SidebarMenu>
