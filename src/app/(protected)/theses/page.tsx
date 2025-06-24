@@ -23,6 +23,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   BookOpenText,
+  Edit2,
+  Image,
   ListFilterPlus,
   LoaderCircle,
   Plus,
@@ -248,10 +250,9 @@ function Page() {
             <TableRow>
               <TableHead>Title</TableHead>
               <TableHead>Course</TableHead>
-              <TableHead>Members</TableHead>
               <TableHead>Year</TableHead>
               <TableHead>Tags</TableHead>
-              <TableHead>Photo</TableHead>
+              <TableHead className=" text-center">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -260,9 +261,8 @@ function Page() {
               const membersNameArray = members.map((member) => member.name);
               return (
                 <TableRow key={thesis.id}>
-                  <TableCell>{thesis.title}</TableCell>
+                  <TableCell><p className=" text-wrap">{thesis.title}</p></TableCell>
                   <TableCell>{thesis.courseCode}</TableCell>
-                  <TableCell>{membersNameArray.join(", ")}</TableCell>
                   <TableCell>{new Date(thesis.year).getFullYear()}</TableCell>
                   <TableCell className="flex flex-wrap gap-1">
                     {thesis.Tags.map((tag) => (
@@ -272,16 +272,16 @@ function Page() {
                     ))}
                   </TableCell>
                   <TableCell>
+                    <div className=" flex flex-row gap-1 items-center justify-center">
+
                     <Button
                       onClick={() => onOpenThesisPhoto(thesis.thesisPhoto)}
                       variant={"outline"}
                       size={"sm"}
                       className="text-xs"
                     >
-                      View
+                      <Image/>
                     </Button>
-                  </TableCell>
-                  <TableCell>
                     <Button
                       onClick={() => setTheses([thesis.id, thesis.title])}
                       variant={"outline"}
@@ -290,6 +290,15 @@ function Page() {
                     >
                       <QrCode/>
                     </Button>
+                    <Button
+                      onClick={() => setTheses([thesis.id, thesis.title])}
+                      variant={"outline"}
+                      size={"sm"}
+                      className="text-xs"
+                    >
+                      <Edit2/>
+                    </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               );

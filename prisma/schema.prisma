@@ -48,21 +48,45 @@ model Course {
 }
 
 model Students {
-    id            String        @id @default(uuid())
-    courseCode    String
-    studentId     String        @unique
-    email         String?       
-    password      String
-    firstName     String
-    middleName    String?
-    lastName      String
-    gender        StudentGender
-    createdAt     DateTime      @default(now())
-    updatedAt     DateTime      @updatedAt
-    Course        Course?       @relation(fields: [courseCode], references: [code])
+    id         String        @id @default(uuid())
+    courseCode String
+    studentId  String        @unique
+    email      String?
+    password   String
+    firstName  String
+    middleName String?
+    lastName   String
+    gender     StudentGender
+    createdAt  DateTime      @default(now())
+    updatedAt  DateTime      @updatedAt
+    Course     Course?       @relation(fields: [courseCode], references: [code])
 
-    Reviews  ThesesReviews[]
+    Ratings  ThesesRatings[]
     Comments ThesesComments[]
+
+    Bag     StudentBag[]
+    Borrows StudentBorrow[]
+}
+
+model StudentBag {
+    studentId String
+    thesisId  String
+    Thesis    Theses   @relation(fields: [thesisId], references: [id])
+    Student   Students @relation(fields: [studentId], references: [id])
+    createdAt DateTime @default(now())
+    @@id([studentId, thesisId])
+}
+
+model StudentBorrow {
+    id         Int                 @id @default(autoincrement())
+    studentId  String
+    thesisId   String
+    status     StudentBorrowStatus @default(BORROWED)
+    Thesis     Theses              @relation(fields: [thesisId], references: [id])
+    Student    Students            @relation(fields: [studentId], references: [id])
+    borrowedAt DateTime
+    returnedAt DateTime
+    createdAt  DateTime            @default(now())
 }
 
 model Theses {
@@ -72,13 +96,17 @@ model Theses {
     abstract    String
     title       String
     members     String
+    isAvailable Boolean          @default(true)
     year        DateTime
     createdAt   DateTime         @default(now())
     updatedAt   DateTime         @updatedAt
     Course      Course           @relation(fields: [courseCode], references: [code])
     Tags        ThesesTags[]
-    Reviews     ThesesReviews[]
+    Ratings     ThesesRatings[]
     Comments    ThesesComments[]
+
+    StudentBag     StudentBag[]
+    StudentBorrows StudentBorrow[]
 }
 
 model Tags {
@@ -98,7 +126,7 @@ model ThesesTags {
     @@id([thesisId, tagId])
 }
 
-model ThesesReviews {
+model ThesesRatings {
     stars     Int
     studentId String
     thesisId  String
@@ -124,4 +152,10 @@ model ThesesComments {
 enum StudentGender {
     MALE
     FEMALE
+}
+
+enum StudentBorrowStatus {
+    PENDING
+    BORROWED
+    RETURNED
 }

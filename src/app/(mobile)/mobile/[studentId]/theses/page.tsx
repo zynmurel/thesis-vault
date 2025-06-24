@@ -1,18 +1,18 @@
 "use client";
+import { RatingRoundedStar } from "@/app/_components/react-rating";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Button as ButtonSmall } from "@/components/ui/button-small";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { api } from "@/trpc/react";
 import {
-  Backpack,
   BookOpenText,
   BookX,
-  BriefcaseBusiness,
   LoaderCircle,
   SlidersHorizontal,
 } from "lucide-react";
 import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
 import {
   parseAsArrayOf,
   parseAsBoolean,
@@ -22,11 +22,13 @@ import {
   useQueryStates,
 } from "nuqs";
 import React from "react";
+import StudentBag from "../_components/studentBag";
+import type { Tags, Theses, ThesesTags } from "@prisma/client";
 
 function Page() {
   const [filters, setFilters] = useQueryStates({
     title: parseAsString.withDefault(""),
-    take: parseAsInteger.withDefault(10),
+    take: parseAsInteger.withDefault(100),
     courseCodes: parseAsArrayOf(parseAsString).withDefault([]),
     tags: parseAsArrayOf(parseAsInteger).withDefault([]),
     year: parseAsArrayOf(parseAsString).withDefault([]),
@@ -38,30 +40,11 @@ function Page() {
 
   const { data, isLoading } = api.mobile.theses.getFilters.useQuery();
   return (
-    <div className="flex h-screen max-h-screen w-full flex-col">
+    <div className="relative flex h-screen max-h-screen w-full flex-col">
+      <StudentBag className="bg-primary text-background absolute bottom-3 left-3 flex size-10 items-center justify-center rounded-full border opacity-80 hover:opacity-100" />
       <div
-        className={`bg-sidebar flex w-full flex-col gap-2 py-2 pb-3 shadow transition-all duration-300 ease-in-out ${showFilter ? "max-h-[600px]" : "max-h-[110px]"}`}
+        className={`bg-sidebar flex w-full flex-col gap-2 py-2 pb-3 shadow transition-all duration-300 ease-in-out ${showFilter ? "max-h-[600px]" : "max-h-[50px]"}`}
       >
-        <div className="flex flex-row items-center px-3">
-          <div className="flex flex-1 flex-row gap-2">
-            <Image
-              width={40}
-              height={40}
-              className="size-10"
-              src={"/images/nwssu-ccis-logo.png"}
-              alt="Logo"
-            />
-            <div className="flex flex-col justify-center">
-              <p className="text-primary text-[13px] font-bold uppercase">Thesis Vault</p>
-              <p className="text-primary -mt-[2px] text-[10px]">
-                College of Computing and Information Science
-              </p>
-            </div>
-          </div>
-          <div className="text-primary px-2">
-            <BriefcaseBusiness className="size-6" strokeWidth={3} />
-          </div>
-        </div>
         <div className="flex flex-row gap-2 px-3">
           <Input
             onChange={(e) =>
@@ -105,7 +88,7 @@ function Page() {
                       return (
                         <Badge
                           key={course.code}
-                          className={`border ${!isSelected ? " text-foreground/60 bg-white" : ""}`}
+                          className={`border ${!isSelected ? "text-foreground/60 bg-white" : ""}`}
                           onClick={() => {
                             const selected = filters.courseCodes || [];
                             if (isSelected) {
@@ -137,7 +120,7 @@ function Page() {
                       return (
                         <Badge
                           key={tag.id}
-                          className={`border ${!isSelected ? " text-foreground/60 bg-white" : ""}`}
+                          className={`border ${!isSelected ? "text-foreground/60 bg-white" : ""}`}
                           onClick={() => {
                             const selected = filters.tags || [];
                             if (isSelected) {
@@ -181,7 +164,7 @@ function Page() {
 const Theses = () => {
   const [filters] = useQueryStates({
     title: parseAsString.withDefault(""),
-    take: parseAsInteger.withDefault(10),
+    take: parseAsInteger.withDefault(100),
     courseCodes: parseAsArrayOf(parseAsString).withDefault([]),
     tags: parseAsArrayOf(parseAsInteger).withDefault([]),
     year: parseAsArrayOf(parseAsString).withDefault([]),
@@ -214,55 +197,100 @@ const Theses = () => {
     <>
       <div className="bg-foreground/5 flex h-full flex-col gap-2 overflow-auto p-2">
         {theses?.map((thesis, index) => {
-            const members = (
-              JSON.parse(thesis.members) as { name: string }[]
-            ).map((m) => m.name);
-            return (
-              <div
-                key={index}
-                className="bg-background  rounded-xl border p-2 shadow flex flex-col gap-1"
-              >
-                <div className="flex flex-row items-center gap-2">
-                  <Image
-                    width={50}
-                    height={50}
-                    src={thesis.thesisPhoto}
-                    alt={`thesis ${index}`}
-                    className="bg-primary h-20 w-18 rounded-lg object-cover"
-                  />
-                  <div className="text-foreground/80 flex-col gap-1 text-xs">
-                    <p className="font-black uppercase">{thesis.title}</p>
-                    <p className="text-[12px]">{members.join(", ")}</p>
-                    <p className="text-[12px] font-bold">
-                      {thesis.courseCode} -{" "}
-                      {new Date(thesis.year).getFullYear()}
-                    </p>
-                    <div className="mt-1 flex flex-wrap gap-0.5">
-                      {thesis.Tags.map((t) => {
-                        const tag = t.Tag;
-                        return (
-                          <Badge
-                            key={t.tagId}
-                            variant={"outline"}
-                            className="text-[9px]"
-                          >
-                            {tag.tag}
-                          </Badge>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-                <div className=" flex justify-end gap-2">
-                  <Badge variant={"outline"} className=" flex-1 p-1">View</Badge>
-                  <Badge variant={"secondary"} className=" flex-1 p-1">Add To Bag</Badge>
-                  <Badge className=" flex-1 p-1">Borrow</Badge>
-                </div>
-              </div>
-            );
-          })}
+          return <Thesis key={index} thesis={thesis} index={index} />;
+        })}
       </div>
     </>
+  );
+};
+
+const Thesis = ({
+  thesis,
+  index,
+}: {
+  thesis: Theses & {
+    averageRating: number;
+    Tags: (ThesesTags & { Tag: Tags })[];
+  };
+  index: number;
+}) => {
+  const { studentId } = useParams();
+  const utils = api.useUtils();
+  const router = useRouter();
+
+  const { data: bag } =
+    api.mobile.student.getBag.useQuery({ studentId: String(studentId) });
+
+  const { mutate, isPending } = api.mobile.theses.putThesisInBag.useMutation({
+    onSuccess: async () => {
+      await utils.mobile.student.getBag.invalidate();
+    },
+  });
+
+  const isAdded = !!bag?.find((b) => b.thesisId === thesis.id);
+
+  const onView = (thesisId: string) => {
+    router.push(`theses/${thesisId}`);
+  };
+
+  const onAddToBag = (thesisId: string) => {
+    mutate({
+      thesisId,
+      studentId: String(studentId),
+    });
+  };
+  return (
+    <div
+      key={index}
+      className="bg-background flex flex-col gap-1 rounded-xl border p-2 shadow"
+    >
+      <div className="flex flex-row items-center gap-2">
+        <Image
+          width={50}
+          height={50}
+          src={thesis.thesisPhoto}
+          alt={`thesis ${index}`}
+          className="bg-primary h-full w-18 rounded-lg object-cover"
+        />
+        <div className="text-foreground/80 flex-col gap-1 text-xs">
+          <p className="font-black uppercase">
+            {thesis.title} {thesis.averageRating}
+          </p>
+          <p className="text-[12px] font-bold">
+            {thesis.courseCode} - {new Date(thesis.year).getFullYear()}
+          </p>
+          <RatingRoundedStar value={thesis.averageRating} />
+          <div className="mt-1 flex flex-wrap gap-0.5">
+            {thesis.Tags.map((t) => {
+              const tag = t.Tag;
+              return (
+                <Badge key={t.tagId} variant={"outline"} className="text-[9px]">
+                  {tag.tag}
+                </Badge>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+      <div className="flex justify-end gap-2">
+        <ButtonSmall
+          variant={"outline"}
+          className="flex-1 p-1"
+          onClick={() => onView(thesis.id)}
+        >
+          View
+        </ButtonSmall>
+        <ButtonSmall
+          variant={"secondary"}
+          className="flex-1 p-1"
+          disabled={isPending || isAdded}
+          onClick={() => onAddToBag(thesis.id)}
+        >
+          {isAdded ? "In Bag" : isPending ? "Adding..." : "Add To Bag"}
+        </ButtonSmall>
+        <ButtonSmall className="flex-1 p-1">Borrow</ButtonSmall>
+      </div>
+    </div>
   );
 };
 

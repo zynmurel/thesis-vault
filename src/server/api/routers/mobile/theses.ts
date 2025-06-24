@@ -19,11 +19,10 @@ export const mobileThesesRouter = createTRPCRouter({
         tags: z.array(z.number()),
         year: z.array(z.string()),
         courseCodes: z.array(z.string()),
-        take : z.number()
+        take: z.number(),
       }),
     )
     .query(async ({ ctx, input: { tags, year, courseCodes, title, take } }) => {
-        console.log(tags)
       const whereCourseCode = courseCodes.length
         ? {
             courseCode: {
@@ -34,9 +33,9 @@ export const mobileThesesRouter = createTRPCRouter({
 
       const whereYear = year.length
         ? {
-          year : {
-            in : year
-          }
+            year: {
+              in: year,
+            },
           }
         : {};
 
@@ -50,9 +49,7 @@ export const mobileThesesRouter = createTRPCRouter({
           }
         : {};
 
-        console.log(whereTags)
-
-      return await ctx.db.theses.findMany({
+      const theses = await ctx.db.theses.findMany({
         where: {
           title: { contains: title, mode: "insensitive" },
           ...whereCourseCode,
@@ -65,9 +62,111 @@ export const mobileThesesRouter = createTRPCRouter({
               Tag: true,
             },
           },
-          Course : true
+          Course: true,
+          Ratings: true,
         },
-        take
+        take,
+      });
+
+      return theses.map((t) => {
+        return {
+          ...t,
+          averageRating: t.Ratings.length
+            ? t.Ratings.reduce((a, c) => a + c.stars, 0) / t.Ratings.length
+            : 0,
+        };
+      });
+    }),
+
+  getThesis: publicProcedure
+    .input(
+      z.object({
+        thesisId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input: { thesisId } }) => {
+      const t = await ctx.db.theses.findUnique({
+        where: {
+          id: thesisId,
+        },
+        include: {
+          Tags: {
+            include: {
+              Tag: true,
+            },
+          },
+          Course: true,
+          Ratings: true,
+        },
+      });
+
+      return t
+        ? {
+            ...t,
+            averageRating: t.Ratings.length
+              ? t.Ratings.reduce((a, c) => a + c.stars, 0) / t.Ratings.length
+              : 0,
+          }
+        : null;
+    }),
+
+  getThesisComments: publicProcedure
+    .input(
+      z.object({
+        studentId: z.string(),
+        thesisId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input: { thesisId, studentId } }) => {
+      return await ctx.db.thesesComments.findMany({
+        where: {
+          thesisId,
+        },
+        include: {
+          Student: {
+            include: {
+              Ratings: {
+                where: {
+                  thesisId,
+                },
+              },
+            },
+          },
+        },
+      });
+    }),
+
+  getYourRating: publicProcedure
+    .input(
+      z.object({
+        studentId: z.string(),
+        thesisId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input: { thesisId, studentId } }) => {
+      return await ctx.db.thesesRatings.findUnique({
+        where: {
+          thesisId_studentId: {
+            thesisId,
+            studentId,
+          },
+        },
+      });
+    }),
+
+  putThesisInBag: publicProcedure
+    .input(
+      z.object({
+        studentId: z.string(),
+        thesisId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input: { thesisId, studentId } }) => {
+      return await ctx.db.studentBag.create({
+        data: {
+          thesisId,
+          studentId,
+        },
       });
     }),
 });

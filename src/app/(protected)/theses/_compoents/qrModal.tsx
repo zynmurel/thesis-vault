@@ -27,7 +27,7 @@ export default function ThesesQRModal() {
     <Dialog open={!!theses.length} onOpenChange={onClose}>
       <DialogContent className="md:min-w-xl">
         <DialogHeader>
-          <DialogTitle>Theses QR Code</DialogTitle>
+          <DialogTitle>Thesis QR Code</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center justify-center gap-2">
           <div ref={contentRef} className="print-container">
