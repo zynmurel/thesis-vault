@@ -9,10 +9,13 @@ import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RatingRoundedStar } from "@/app/_components/react-rating";
+import { parseAsString, useQueryState } from "nuqs";
 
 function ThesisDisplay() {
   const { thesisId, studentId } = useParams();
   const utils = api.useUtils();
+
+  const [_, setShowBorrow] = useQueryState("borrow", parseAsString);
 
   const { data: bag } = api.mobile.student.getBag.useQuery({
     studentId: String(studentId),
@@ -25,7 +28,7 @@ function ThesisDisplay() {
     { enabled: !!thesisId },
   );
 
-  const { mutate, isPending } = api.mobile.theses.putThesisInBag.useMutation({
+  const { mutate, isPending } = api.mobile.student.putThesisInBag.useMutation({
     onSuccess: async () => {
       await utils.mobile.student.getBag.invalidate();
     },
@@ -33,8 +36,11 @@ function ThesisDisplay() {
 
   if (isLoading) {
     return (
-      <div>
-        <Skeleton className="h-32 w-full" />
+      <div className="flex flex-col gap-1">
+        <Skeleton className="bg-primary/20 h-32 w-full" />
+        <Skeleton className="bg-primary/20 h-8 w-2/3" />
+        <Skeleton className="bg-primary/20 h-6 w-1/2" />
+        <Skeleton className="bg-primary/20 h-4 w-3/4" />
       </div>
     );
   }
@@ -52,10 +58,12 @@ function ThesisDisplay() {
 
   const onAddToBag = () => {
     mutate({
-      thesisId : data.id,
-      studentId : String(studentId),
+      thesisId: data.id,
+      studentId: String(studentId),
     });
   };
+
+  const isBorrowed = data?.StudentBorrows;
 
   return (
     <div className="text-foreground/80 flex flex-col gap-1">
@@ -76,9 +84,22 @@ function ThesisDisplay() {
           <Tag className="size-3.5" strokeWidth={3} /> {data.Course.title}
         </div>
       </div>
-      <div className="text-foreground/50 flex flex-row items-center gap-2 text-sm">
-        <RatingRoundedStar value={data.averageRating} />{" "}
-        <p>({data.Ratings.length})</p>
+      <div className="flex w-full flex-row items-center justify-between">
+        <div className="text-foreground/50 flex flex-row items-center gap-2 text-sm">
+          <RatingRoundedStar
+            value={data.averageRating}
+            onChange={() => {}}
+            readOnly={true}
+          />{" "}
+          <p>({data.Ratings.length})</p>
+        </div>
+        <div className=" px-2">
+          {isBorrowed ? (
+            <Badge className="bg-red-500 px-3">Not Available</Badge>
+          ) : (
+            <Badge className="bg-blue-500 px-3">Available</Badge>
+          )}
+        </div>
       </div>
       <div className="flex flex-col gap-1">
         <div className="text-foreground/50 text-xs">Tags</div>
@@ -95,10 +116,21 @@ function ThesisDisplay() {
         </div>
       </div>
       <div className="bg-background absolute right-0 bottom-0 left-0 flex w-full flex-row justify-end">
-        <Button variant={"secondary"} className="flex-1 rounded-none" disabled={isPending || isAdded} onClick={onAddToBag}>
+        <Button
+          variant={"secondary"}
+          className="flex-1 rounded-none"
+          disabled={isPending || isAdded}
+          onClick={onAddToBag}
+        >
           {isAdded ? "In Bag" : isPending ? "Adding..." : "Add To Bag"}
         </Button>
-        <Button className="flex-1 rounded-none">Borrow</Button>
+        <Button
+          className="flex-1 rounded-none"
+          onClick={() => setShowBorrow(data.id)}
+          disabled={!!isBorrowed.length}
+        >
+          Borrow
+        </Button>
       </div>
     </div>
   );

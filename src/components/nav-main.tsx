@@ -22,7 +22,6 @@ export function NavMain({
 }) {
   const router = useRouter()
   const path = usePathname()
-  console.log(path)
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Pages</SidebarGroupLabel>

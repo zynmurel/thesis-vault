@@ -19,7 +19,6 @@ export default function UploadView() {
     const { data, error } = await supabase.storage
       .from("thesisvault") // your bucket name
       .upload(filePath, file);
-    console.log(data);
     if (error) {
       alert(`Upload failed: ${error.message}`);
     } else {

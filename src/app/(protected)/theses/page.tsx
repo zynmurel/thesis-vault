@@ -257,8 +257,6 @@ function Page() {
           </TableHeader>
           <TableBody>
             {theses?.map((thesis) => {
-              const members = JSON.parse(thesis.members) as { name: string }[];
-              const membersNameArray = members.map((member) => member.name);
               return (
                 <TableRow key={thesis.id}>
                   <TableCell><p className=" text-wrap">{thesis.title}</p></TableCell>

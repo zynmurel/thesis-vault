@@ -214,6 +214,10 @@ const Thesis = ({
   };
   index: number;
 }) => {
+  const [_, setShowBorrow] = useQueryState(
+    "borrow",
+    parseAsString,
+  );
   const { studentId } = useParams();
   const utils = api.useUtils();
   const router = useRouter();
@@ -221,7 +225,7 @@ const Thesis = ({
   const { data: bag } =
     api.mobile.student.getBag.useQuery({ studentId: String(studentId) });
 
-  const { mutate, isPending } = api.mobile.theses.putThesisInBag.useMutation({
+  const { mutate, isPending } = api.mobile.student.putThesisInBag.useMutation({
     onSuccess: async () => {
       await utils.mobile.student.getBag.invalidate();
     },
@@ -288,7 +292,7 @@ const Thesis = ({
         >
           {isAdded ? "In Bag" : isPending ? "Adding..." : "Add To Bag"}
         </ButtonSmall>
-        <ButtonSmall className="flex-1 p-1">Borrow</ButtonSmall>
+        <ButtonSmall className="flex-1 p-1" onClick={()=>setShowBorrow(thesis.id)}>Borrow</ButtonSmall>
       </div>
     </div>
   );

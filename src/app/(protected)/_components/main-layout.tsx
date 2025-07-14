@@ -1,3 +1,4 @@
+import ScanQR from "@/app/_components/ScanQR";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -16,6 +17,7 @@ export default function MainLayout({
         } as React.CSSProperties
       }
     >
+      <ScanQR/>
       <AppSidebar variant="inset" />
       <div className=" bg-gradient-to-r from-sidebar dark:to-green-900/50 to-sidebar  flex h-screen max-h-screen w-full flex-col md:p-2">
         <div className="h-full w-full overflow-hidden md:rounded-xl">

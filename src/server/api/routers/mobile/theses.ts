@@ -97,6 +97,15 @@ export const mobileThesesRouter = createTRPCRouter({
           },
           Course: true,
           Ratings: true,
+          StudentBorrows: {
+            where: {
+              status: { in: ["BORROWED", "PENDING"] },
+            },
+            orderBy: {
+              createdAt: "desc", // or updatedAt
+            },
+            take: 1,
+          },
         },
       });
 
@@ -117,7 +126,7 @@ export const mobileThesesRouter = createTRPCRouter({
         thesisId: z.string(),
       }),
     )
-    .query(async ({ ctx, input: { thesisId, studentId } }) => {
+    .query(async ({ ctx, input: { thesisId } }) => {
       return await ctx.db.thesesComments.findMany({
         where: {
           thesisId,
@@ -132,40 +141,6 @@ export const mobileThesesRouter = createTRPCRouter({
               },
             },
           },
-        },
-      });
-    }),
-
-  getYourRating: publicProcedure
-    .input(
-      z.object({
-        studentId: z.string(),
-        thesisId: z.string(),
-      }),
-    )
-    .query(async ({ ctx, input: { thesisId, studentId } }) => {
-      return await ctx.db.thesesRatings.findUnique({
-        where: {
-          thesisId_studentId: {
-            thesisId,
-            studentId,
-          },
-        },
-      });
-    }),
-
-  putThesisInBag: publicProcedure
-    .input(
-      z.object({
-        studentId: z.string(),
-        thesisId: z.string(),
-      }),
-    )
-    .mutation(async ({ ctx, input: { thesisId, studentId } }) => {
-      return await ctx.db.studentBag.create({
-        data: {
-          thesisId,
-          studentId,
         },
       });
     }),

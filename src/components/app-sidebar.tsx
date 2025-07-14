@@ -12,8 +12,12 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { menu } from "@/lib/const/sidebar-menu";
+import { Button } from "./ui/button";
+import { ScanBarcode } from "lucide-react";
+import { parseAsString, useQueryState } from "nuqs";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [_, setQR] = useQueryState("ScanQR", parseAsString)
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -32,6 +36,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {/* <NavSecondary items={menu.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
+        <Button size={"lg"} className=" cursor-pointer" onClick={()=>setQR("open")}><ScanBarcode/><p className=" pr-3">Scan Book</p></Button>
         <NavUser />
       </SidebarFooter>
     </Sidebar>

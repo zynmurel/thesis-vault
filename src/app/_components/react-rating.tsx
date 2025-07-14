@@ -10,9 +10,19 @@ const myStyles = {
 export function RatingRoundedStar({
   onChange,
   value,
+  readOnly,
 }: {
   onChange?: RatingChange | undefined;
   value: number;
+  readOnly?: boolean;
 }) {
-  return <Rating style={{ maxWidth: 100 }} value={value} onChange={onChange} itemStyles={myStyles} />;
+  return (
+    <Rating
+      style={{ maxWidth: 100 }}
+      value={value}
+      onChange={onChange}
+      itemStyles={myStyles}
+      readOnly={!!readOnly}
+    />
+  );
 }
