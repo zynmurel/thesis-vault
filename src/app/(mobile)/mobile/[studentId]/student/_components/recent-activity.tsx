@@ -96,7 +96,7 @@ function RecentActivity() {
           <div className="text-muted-foreground/60 flex flex-col items-center p-3 py-10 text-center text-xs">
             <BookOpen />
             No recent activity
-            <Button className=" mt-3" onClick={()=>router.push("theses")}><BookText/>Borrow</Button>
+            {/* <Button className=" mt-3" onClick={()=>router.push("theses")}><BookText/>Borrow</Button> */}
           </div>
         )}
       </div>
