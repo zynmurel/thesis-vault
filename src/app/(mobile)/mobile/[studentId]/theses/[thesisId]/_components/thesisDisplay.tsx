@@ -64,7 +64,7 @@ function ThesisDisplay() {
   };
 
   const isBorrowed = data?.StudentBorrows.length
-  
+
   return (
     <div className="text-foreground/80 flex flex-col gap-1">
       <Image
@@ -127,7 +127,7 @@ function ThesisDisplay() {
         <Button
           className="flex-1 rounded-none"
           onClick={() => setShowBorrow(data.id)}
-          disabled={!!isBorrowed.length}
+          disabled={!!isBorrowed}
         >
           Borrow
         </Button>

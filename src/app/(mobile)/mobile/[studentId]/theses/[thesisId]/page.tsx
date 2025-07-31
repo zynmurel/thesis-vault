@@ -11,11 +11,11 @@ function ThesiPage() {
   const onBack = () => router.back();
   return (
     <div className="flex h-screen flex-col relative">
-      <div className="bg-secondary flex h-10 justify-start items-center px-0">
+      <div className="bg-secondary flex h-10 justify-start items-center px-0 text-foreground/70" onClick={()=>onBack()}>
         <Button onClick={()=>onBack()} variant={"ghost"} className=" h-6 gap-0.5">
-        <CornerUpLeft strokeWidth={3} className=" size-4" />
+        <CornerUpLeft strokeWidth={2.5} className=" size-3" />
         </Button>
-        <p className=" text-sm font-bold">View Thesis</p>
+        <p className=" text-xs font-normal">Go Back</p>
       </div>
       <div className="space-y-3 p-1.5 h-full overflow-auto pb-20">
         <ThesisDisplay />
