@@ -8,7 +8,7 @@ import "./src/env.js";
 const config = {
     images : {
         domains  : ['zzwlrwodwcijsendalzt.supabase.co']
-    }
+    },
 };
 
 export default config;

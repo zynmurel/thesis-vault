@@ -21,11 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  parseAsArrayOf,
-  parseAsString,
-  useQueryState,
-} from "nuqs";
+import { parseAsArrayOf, parseAsString, useQueryState } from "nuqs";
 import {
   Camera,
   LoaderCircle,
@@ -45,7 +41,7 @@ import { api } from "@/trpc/react";
 import { years } from "@/utils/year";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
-import { useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { handleUploadSupabase } from "@/lib/upload";
 
 const thesisSchema = z.object({
@@ -78,12 +74,23 @@ interface Props {
 export default function UpsertThesis() {
   const [thesesId, setThesesId] = useQueryState("upsert", parseAsString);
 
-  const [_, setTheses] = useQueryState("thesesQR", parseAsArrayOf(parseAsString).withDefault([]));
+  const [_, setTheses] = useQueryState(
+    "thesesQR",
+    parseAsArrayOf(parseAsString).withDefault([]),
+  );
 
   const [thesisPhoto, setThesisPhoto] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const isCreate = thesesId === "create";
   const utils = api.useUtils();
+
+  const { data: thesis, isLoading: thesisIsLoading } =
+    api.theses.getThesisByQR.useQuery(
+      {
+        thesisId: thesesId as string,
+      },
+      { enabled: !!thesesId && thesesId !== "create" },
+    );
 
   const form = useForm<ThesisFormValues>({
     resolver: zodResolver(thesisSchema),
@@ -97,9 +104,8 @@ export default function UpsertThesis() {
   const { mutate, isPending } = api.theses.upsertTheses.useMutation({
     onSuccess: async (data) => {
       await utils.theses.getMany.invalidate();
-      toast("Thesis added", {
-        description: "Your thesis has been saved.",
-      });
+      await utils.theses.getThesisByQR.invalidate();
+      toast("Thesis added");
       form.reset();
       onSetThesesData({ id: data.id, title: data.title });
       setThesisPhoto(null);
@@ -110,13 +116,13 @@ export default function UpsertThesis() {
 
   const onSubmit = async (data: ThesisFormValues) => {
     setIsLoading(true);
-    let thesisPhoto = null;
+    let photo = thesisPhoto;
     if (data.thesisPhoto) {
-      thesisPhoto = await handleUploadSupabase(data.thesisPhoto).finally(() =>
+      photo = await handleUploadSupabase(data.thesisPhoto).finally(() =>
         setIsLoading(false),
       );
     }
-    if (!thesisPhoto) {
+    if (!photo) {
       setIsLoading(false);
       form.setError("thesisPhoto", { message: "Image is required" });
     } else {
@@ -128,7 +134,7 @@ export default function UpsertThesis() {
         courseCode: data.courseCode,
         members: JSON.stringify(data.members),
         tagIds: data.tags,
-        thesisPhoto,
+        thesisPhoto: photo,
       });
     }
   };
@@ -136,6 +142,25 @@ export default function UpsertThesis() {
   const onSetThesesData = ({ id, title }: { id: string; title: string }) => {
     setTheses([id, title]);
   };
+
+  useEffect(() => {
+    if (thesesId === "create") {
+      form.reset({
+        members: [{ name: "" }],
+      });
+      setThesisPhoto(null)
+    } else if (thesis) {
+      setThesisPhoto(thesis.thesisPhoto);
+      form.reset({
+        title: thesis.title,
+        abstract: thesis.abstract,
+        courseCode: thesis.courseCode,
+        tags: thesis.Tags.map((t) => t.Tag.id),
+        year: String(new Date(thesis.year).getFullYear()),
+        members: JSON.parse(thesis.members),
+      });
+    }
+  }, [thesis, thesesId]);
 
   return (
     <Dialog open={!!thesesId} onOpenChange={onClose}>
@@ -148,14 +173,20 @@ export default function UpsertThesis() {
               : "Make the necessary changes to update the existing thesis information."}
           </DialogDescription>
         </DialogHeader>
-        <ThesisForm
-          form={form}
-          onSubmit={onSubmit}
-          onClose={onClose}
-          isPending={isPending || isLoading}
-          thesisPhoto={thesisPhoto}
-          setThesisPhoto={setThesisPhoto}
-        />
+        {thesisIsLoading ? (
+          <div className="flex flex-row items-center justify-center gap-2 p-10">
+            <LoaderCircle className="animate-spin" /> Loading...
+          </div>
+        ) : (
+          <ThesisForm
+            form={form}
+            onSubmit={onSubmit}
+            onClose={onClose}
+            isPending={isPending || isLoading}
+            thesisPhoto={thesisPhoto}
+            setThesisPhoto={setThesisPhoto}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

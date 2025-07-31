@@ -57,14 +57,10 @@ export default function AddStudentModal() {
     onSuccess: async () => {
       await utils.students.getMany.invalidate();
       onClose();
-      toast.success("Success", {
-        description: "Students submitted.",
-      });
+      toast.success("Success, Students submitted.");
     },
     onError: () => {
-      toast.error("Failed", {
-        description: "Failed to submit student",
-      });
+      toast.error("Failed to submit student");
     },
   });
 

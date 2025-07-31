@@ -7,6 +7,8 @@ import { studentsRouter } from "./routers/students";
 import { mobileThesesRouter } from "./routers/mobile/theses";
 import { mobileStudentRouter } from "./routers/mobile/student";
 import { borrowsRouter } from "./routers/borrows";
+import { dashboardRouter } from "./routers/dashboard";
+import { settingsRouter } from "./routers/settings";
 
 /**
  * This is the primary router for your server.
@@ -20,6 +22,8 @@ export const appRouter = createTRPCRouter({
   courses: coursesRouter,
   students: studentsRouter,
   borrows: borrowsRouter,
+  dashboard: dashboardRouter,
+  settings : settingsRouter,
   mobile: {
     student : mobileStudentRouter,
     theses : mobileThesesRouter

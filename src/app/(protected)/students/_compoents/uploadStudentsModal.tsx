@@ -121,14 +121,10 @@ export default function UploadStudentsModal() {
       onClose();
       setExcelData([]);
       setCourseCode(null)
-      toast.success("Add Success", {
-        description: "All students added.",
-      });
+      toast.success("Add Success");
     },
     onError: () => {
-      toast.error("Failed", {
-        description: "Failed to add students. Recheck file format",
-      });
+      toast.error("Failed to add students. Recheck file format");
     },
   });
 

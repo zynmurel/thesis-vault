@@ -39,6 +39,7 @@ import {
 import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
 import TablePagination from "../_components/table-pagination";
+import { BorrowStatus, formatName } from "@/lib/utils";
 
 function Page() {
   const [filterStatus, setFilterStatus] = useQueryState(
@@ -79,7 +80,7 @@ function Page() {
               <Badge
                 key={stat}
                 variant={"default"}
-                className={`${stat === "BORROWED" ? "bg-orange-500" : stat === "RETURNED" ? "bg-blue-500" : "bg-gray-500"}`}
+                className={`${stat === "BORROWED" ? "bg-orange-500" : stat === "RETURNED" ? "bg-blue-500" : ( stat === "OVERDUE" ? "bg-red-500" : "bg-gray-500")}`}
               >
                 {stat}
                 <div
@@ -141,7 +142,7 @@ function Page() {
               <PopoverContent className="w-64">
                 <h4 className="mb-2 text-sm font-medium">Filter by Status</h4>
                 <div className="flex max-h-60 flex-col gap-2 overflow-auto">
-                  {["PENDING", "BORROWED", "RETURNED"].map((stat) => (
+                  {["PENDING", "BORROWED", "RETURNED", "OVERDUE"].map((stat) => (
                     <label key={stat} className="flex items-center gap-2">
                       <Checkbox
                         checked={filterStatus?.includes(stat)}
@@ -193,12 +194,7 @@ function Page() {
                 <TableRow key={borrow.id}>
                   <TableCell>
                     <div className="flex flex-col gap-1">
-                      <Badge
-                        variant={"default"}
-                        className={`${borrow.status === "BORROWED" ? "bg-orange-500" : borrow.status === "RETURNED" ? "bg-blue-500" : "bg-gray-500"}`}
-                      >
-                        {borrow.status}
-                      </Badge>
+                      <BorrowStatus status={borrow.status}/>
                       <p className="text-sm font-semibold text-wrap">
                         {format(borrow.updatedAt, "MM/dd/yyyy, hh:mm:aa")}
                       </p>
@@ -221,7 +217,7 @@ function Page() {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-row items-center gap-1">
-                      <p className="font-semibold">{`${borrow.Student.firstName}${borrow.Student.middleName ? ` ${borrow.Student.middleName}` : " "} ${borrow.Student.lastName}`}</p>
+                      <p className="font-semibold">{formatName(borrow.Student)}</p>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -246,7 +242,7 @@ function Page() {
             <LoaderCircle className="animate-spin" />
           </div>
         )}
-        {!count && !countIsLoading && (
+        {!count && !countIsLoading && !isLoading && (
           <div className="text-muted-foreground flex items-center justify-center p-5 text-sm">
             <p>No borrows found</p>
           </div>

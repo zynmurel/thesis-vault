@@ -127,6 +127,7 @@ export const thesesRouter = createTRPCRouter({
             courseCode,
             thesisPhoto,
             Tags: {
+              deleteMany : {},
               createMany: {
                 data: tagIds.map((tagId) => ({ tagId })),
               },

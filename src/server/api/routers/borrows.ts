@@ -14,15 +14,36 @@ export const borrowsRouter = createTRPCRouter({
     .query(async ({ ctx, input: { statuses, search, skip, take } }) => {
       const whereStatus = statuses.length
         ? {
-            status: { in: statuses as ("PENDING" | "BORROWED" | "RETURNED")[] },
+            status: {
+              in: statuses.filter((s) => s !== "OVERDUE") as (
+                | "PENDING"
+                | "BORROWED"
+                | "RETURNED"
+              )[],
+            },
           }
         : {};
+      const whereOverDue = statuses.includes("OVERDUE");
       const borrows = await ctx.db.studentBorrow.findMany({
         where: {
-          ...whereStatus,
-          Thesis: {
-            title: { contains: search, mode: "insensitive" },
-          },
+          OR: [
+            {
+              ...whereStatus,
+              Thesis: {
+                title: { contains: search, mode: "insensitive" },
+              },
+            },
+            {
+              ...(whereOverDue
+                ? {
+                    AND: [
+                      { borrowDueAt: { lt: new Date() } },
+                      { status: "BORROWED" },
+                    ],
+                  }
+                : {}),
+            },
+          ],
         },
         skip,
         take,
@@ -48,15 +69,36 @@ export const borrowsRouter = createTRPCRouter({
     .query(async ({ ctx, input: { statuses, search } }) => {
       const whereStatus = statuses.length
         ? {
-            status: { in: statuses as ("PENDING" | "BORROWED" | "RETURNED")[] },
+            status: {
+              in: statuses.filter((s) => s !== "OVERDUE") as (
+                | "PENDING"
+                | "BORROWED"
+                | "RETURNED"
+              )[],
+            },
           }
         : {};
+      const whereOverDue = statuses.includes("OVERDUE");
       const borrows = await ctx.db.studentBorrow.count({
         where: {
-          ...whereStatus,
-          Thesis: {
-            title: { contains: search, mode: "insensitive" },
-          },
+          OR: [
+            {
+              ...whereStatus,
+              Thesis: {
+                title: { contains: search, mode: "insensitive" },
+              },
+            },
+            {
+              ...(whereOverDue
+                ? {
+                    AND: [
+                      { borrowDueAt: { lt: new Date() } },
+                      { status: "BORROWED" },
+                    ],
+                  }
+                : {}),
+            },
+          ],
         },
       });
       return borrows;

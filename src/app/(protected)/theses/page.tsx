@@ -103,6 +103,7 @@ function Page() {
   };
 
   const onCreateThesis = () => thesisIdQueryState[1]("create");
+  const onUpdateThesis = (id:string) => thesisIdQueryState[1](id);
 
   const onOpenThesisPhoto = (url: string) => setThesisPhoto(url);
 
@@ -289,7 +290,7 @@ function Page() {
                       <QrCode/>
                     </Button>
                     <Button
-                      onClick={() => setTheses([thesis.id, thesis.title])}
+                      onClick={() => onUpdateThesis(thesis.id)}
                       variant={"outline"}
                       size={"sm"}
                       className="text-xs"
