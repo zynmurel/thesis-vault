@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
+import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
     const { studentId, password } = await req.json().then((data) => {
@@ -18,7 +19,7 @@ export async function POST(req: NextRequest) {
         if (!user) {
             return NextResponse.json({ message: "user_not_found", error: 'Invalid credentials', status: 401 }, { status: 200 });
         }
-        const passwordMatch = password === user.password
+        const passwordMatch = await bcrypt.compare(password as string, user.password);
 
         if (!passwordMatch) {
             return NextResponse.json({ message: "wrong_password", error: 'Invalid credentials', status: 401 }, { status: 200 });
