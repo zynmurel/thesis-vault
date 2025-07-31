@@ -25,8 +25,8 @@ model Admin {
     password                String
     createdAt               DateTime               @default(now())
     updatedAt               DateTime               @updatedAt
-    BorrowDueDateSettings   BorrowDueDateSettings? @relation(fields: [borrowDueDateSettingsId], references: [adminId])
-    BorrowLimitSettings     BorrowLimitSettings?   @relation(fields: [borrowLimitSettingsId], references: [adminId])
+    BorrowDueDateSettings   BorrowDueDateSettings? 
+    BorrowLimitSettings     BorrowLimitSettings?  
 }
 
 model BorrowDueDateSettings {
@@ -34,7 +34,7 @@ model BorrowDueDateSettings {
     dayCount  Int      @default(3)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
-    Admin     Admin?
+    Admin     Admin? @relation(fields: [adminId], references: [id])
 }
 
 model BorrowLimitSettings {
@@ -42,7 +42,7 @@ model BorrowLimitSettings {
     limitCount Int      @default(2)
     createdAt  DateTime @default(now())
     updatedAt  DateTime @updatedAt
-    Admin      Admin?
+    Admin      Admin? @relation(fields: [adminId], references: [id])
 }
 
 model Department {

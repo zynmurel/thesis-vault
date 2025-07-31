@@ -56,7 +56,7 @@ export const settingsRouter = createTRPCRouter({
       return await ctx.db.borrowLimitSettings.upsert({
         where: { adminId: admin.id },
         create: { ...input, adminId : admin.id },
-        update: { ...input },
+        update: { ...input, adminId : admin.id  },
       });
     }),
 
@@ -70,7 +70,7 @@ export const settingsRouter = createTRPCRouter({
       return await ctx.db.borrowDueDateSettings.upsert({
         where: { adminId: admin.id },
         create: { ...input, adminId : admin.id },
-        update: { ...input },
+        update: { ...input, adminId : admin.id  },
       });
     }),
 });

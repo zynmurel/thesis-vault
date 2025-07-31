@@ -63,8 +63,8 @@ function ThesisDisplay() {
     });
   };
 
-  const isBorrowed = data?.StudentBorrows;
-
+  const isBorrowed = data?.StudentBorrows.length
+  
   return (
     <div className="text-foreground/80 flex flex-col gap-1">
       <Image
