@@ -53,7 +53,7 @@ export const studentsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const hashedPassword = await hashPassword("Default@123")
+      const hashedPassword = await hashPassword("Default@123");
       return await ctx.db.students.upsert({
         where: { id: input.id || "" },
         update: {
@@ -95,13 +95,14 @@ export const studentsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input: { students } }) => {
       return await ctx.db.$transaction(async (tx) => {
-        const hashedPassword = await hashPassword("Default@123")
+        const hashedPassword = await hashPassword("Default@123");
+
         return await Promise.all(
           students.map((student) =>
-            tx.students.upsert({
+            ctx.db.students.upsert({
               where: { studentId: student.studentId },
               update: {
-                studentId : student.studentId,
+                studentId: student.studentId,
                 courseCode: student.courseCode,
                 firstName: student.firstName,
                 middleName: student.middleName,
