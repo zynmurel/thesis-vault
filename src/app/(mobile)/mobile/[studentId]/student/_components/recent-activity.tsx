@@ -13,7 +13,7 @@ function RecentActivity() {
   const { studentId } = useParams();
   const router = useRouter();
   const { data, isLoading } =
-    api.mobile.student.getStudentPendingBorrows.useQuery(
+    api.mobile.student.getStudentRecentActivity.useQuery(
       {
         studentId: String(studentId),
       },
@@ -50,7 +50,7 @@ function RecentActivity() {
                     <p className="text-[10px]">
                       Request Date : {format(borrows.createdAt, "MM/dd/yyy")}
                     </p>
-                    <Badge className="text-[10px]" variant={"outline"}>
+                    <Badge className={`text-[10px] text-white ${borrows.status === "RETURNED" ? "bg-blue-500" : ( borrows.status === "BORROWED" ? "bg-orange-400" : "")}`} variant={"outline"}>
                       {borrows.status}
                     </Badge>
                   </div>
@@ -66,7 +66,7 @@ function RecentActivity() {
                     </div>
                     <div className="flex flex-1 flex-col">
                       <p className="font-black uppercase">{thesis.title}</p>
-                      <div className="flex flex-row items-center justify-between">
+                      <div className="flex flex-col justify-between">
                         <p className="text-[12px] font-bold">
                           {thesis.courseCode} -{" "}
                           {new Date(thesis.year).getFullYear()}

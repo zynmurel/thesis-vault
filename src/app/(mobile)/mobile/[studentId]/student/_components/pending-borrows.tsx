@@ -56,7 +56,8 @@ function PendingBorrows() {
                     <div>
                       <p className="font-black uppercase">{thesis.title}</p>
                     </div>
-                    <div className="flex flex-row items-center justify-between">
+                    <div className="flex flex-col justify-between">
+                      {" "}
                       <p className="text-[12px] font-bold">
                         {thesis.courseCode} -{" "}
                         {new Date(thesis.year).getFullYear()}
