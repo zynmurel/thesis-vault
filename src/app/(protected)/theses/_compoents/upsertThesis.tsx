@@ -49,7 +49,8 @@ const thesisSchema = z.object({
   courseCode: z.string(),
   title: z.string(),
   abstract: z.string(),
-  year: z.string(),
+  year: z.string().min(1, { message: "Year is required" }),
+  quantity: z.number().min(1, { message: "Quantity must not be less than 1" }),
   tags: z.array(z.number()),
   members: z
     .array(
@@ -95,6 +96,7 @@ export default function UpsertThesis() {
   const form = useForm<ThesisFormValues>({
     resolver: zodResolver(thesisSchema),
     defaultValues: {
+      quantity: 1,
       members: [{ name: "" }],
     },
   });
@@ -115,6 +117,11 @@ export default function UpsertThesis() {
   });
 
   const onSubmit = async (data: ThesisFormValues) => {
+    if (data.quantity <= thesis!.quantity - thesis!.available) {
+      form.setError("quantity", { message : ``})
+     toast.error(`Cannot deduct quantity less than the borrowed thesis (${thesis!.quantity - thesis!.available})`);
+      return;
+    }
     setIsLoading(true);
     let photo = thesisPhoto;
     if (data.thesisPhoto) {
@@ -135,6 +142,7 @@ export default function UpsertThesis() {
         members: JSON.stringify(data.members),
         tagIds: data.tags,
         thesisPhoto: photo,
+        quantity: data.quantity,
       });
     }
   };
@@ -148,13 +156,14 @@ export default function UpsertThesis() {
       form.reset({
         members: [{ name: "" }],
       });
-      setThesisPhoto(null)
+      setThesisPhoto(null);
     } else if (thesis) {
       setThesisPhoto(thesis.thesisPhoto);
       form.reset({
         title: thesis.title,
         abstract: thesis.abstract,
         courseCode: thesis.courseCode,
+        quantity: thesis.quantity,
         tags: thesis.Tags.map((t) => t.Tag.id),
         year: String(new Date(thesis.year).getFullYear()),
         members: JSON.parse(thesis.members),
@@ -332,40 +341,73 @@ const ThesisForm = ({
             )}
           />
 
-          <FormField
-            control={control}
-            name="courseCode"
-            render={({ field }) => (
-              <FormItem className="md:max-w-2/3">
-                <FormLabel>Course</FormLabel>
-                <Select onValueChange={field.onChange}>
+          <div className="grid grid-cols-3 gap-5">
+            <FormField
+              control={control}
+              name="courseCode"
+              render={({ field }) => (
+                <FormItem className="col-span-2">
+                  <FormLabel>Course</FormLabel>
+                  <Select onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <div className="truncate">
+                          {courses?.find((c) => c.code === field.value)
+                            ?.title || "Select Program"}
+                        </div>
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectGroup>
+                        {coursesIsLoading ? (
+                          <LoaderCircle className="animate-spin" />
+                        ) : (
+                          courses?.map((course) => (
+                            <SelectItem key={course.code} value={course.code}>
+                              <div className="flex flex-row gap-1">
+                                <span>{course.title}</span>
+                              </div>
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="quantity"
+              render={({ field }) => (
+                <FormItem className="relative w-full">
+                  <FormLabel>Quantity</FormLabel>
                   <FormControl>
-                    <SelectTrigger className="w-full">
-                      <div className="truncate">
-                        {courses?.find((c) => c.code === field.value)?.title ||
-                          "Select Program"}
+                    <div className="grid h-9 max-w-44 grid-cols-3 items-center gap-x-1 rounded-md border">
+                      <button
+                        onClick={() => field.onChange((field.value || 0) - 1)}
+                        type="button"
+                        className="text-primary"
+                      >
+                        -
+                      </button>
+                      <div className="border-r border-l py-1 text-center text-sm">
+                        {field.value || 0}
                       </div>
-                    </SelectTrigger>
+                      <button
+                        onClick={() => field.onChange((field.value || 0) + 1)}
+                        type="button"
+                        className="text-primary"
+                      >
+                        +
+                      </button>
+                    </div>
                   </FormControl>
-                  <SelectContent>
-                    <SelectGroup>
-                      {coursesIsLoading ? (
-                        <LoaderCircle className="animate-spin" />
-                      ) : (
-                        courses?.map((course) => (
-                          <SelectItem key={course.code} value={course.code}>
-                            <div className="flex flex-row gap-1">
-                              <span>{course.title}</span>
-                            </div>
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </FormItem>
-            )}
-          />
+                  <FormMessage className="absolute -bottom-4" />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <FormField
             control={form.control}

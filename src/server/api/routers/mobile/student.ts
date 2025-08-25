@@ -134,12 +134,16 @@ export const mobileStudentRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input: { thesisId, studentId } }) => {
-      return await ctx.db.studentBag.create({
-        data: {
-          thesisId,
-          studentId,
-        },
-      });
+      console.log("thesisId", thesisId);
+      console.log("studentId", studentId);
+      return await ctx.db.studentBag
+        .create({
+          data: {
+            thesisId,
+            studentId,
+          },
+        })
+        .catch((e) => console.log(e));
     }),
 
   borrowThesis: publicProcedure
@@ -150,12 +154,14 @@ export const mobileStudentRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input: { thesisId, studentId } }) => {
-      const isBorrowed = await ctx.db.studentBorrow.findFirst({
-        where: {
-          thesisId,
-          status: { in: ["BORROWED", "PENDING"] },
-        },
-      });
+      const thesis = await ctx.db.theses.findUnique({
+          where: { id: thesisId, },
+        })
+
+      if (!thesis) throw new Error("No thesis found.");
+
+      const isBorrowed = thesis.available <= 0
+
       if (isBorrowed) throw new Error("This thesis is already borrowed.");
 
       const [admin, borrowCount] = await Promise.all([
@@ -175,11 +181,19 @@ export const mobileStudentRouter = createTRPCRouter({
           `You’ve reached your borrow limit. Each student is allowed a maximum of ${borrowCount} thesis borrows to ensure fair access for others.`,
         );
 
-      return await ctx.db.studentBorrow.create({
-        data: {
-          thesisId,
-          studentId,
-        },
+      return await ctx.db.$transaction(async (tx) => {
+        await tx.theses.update({
+          where : { id : thesisId },
+          data : {
+            available : thesis.available - 1
+          }
+        })
+        return await tx.studentBorrow.create({
+          data: {
+            thesisId,
+            studentId,
+          },
+        });
       });
     }),
 

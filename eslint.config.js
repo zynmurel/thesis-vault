@@ -31,6 +31,7 @@ export default tseslint.config(
     "@typescript-eslint/no-unsafe-argument": "off",
     "@typescript-eslint/dot-notation" : "off",
     "@typescript-eslint/no-unused-expressions":"off",
+    "@typescript-eslint/restrict-template-expressions":"off",
     
     "@typescript-eslint/non-nullable-type-assertion-style": "off",
     "@typescript-eslint/no-floating-promises": "off",

@@ -58,7 +58,7 @@ function BorrowBookModal() {
     }
   };
 
-  const isBorrowed = data?.StudentBorrows?.[0];
+  const isBorrowed = !!data && !data?.available;
 
   return (
     <Dialog open={!!borrow} onOpenChange={onClose}>
@@ -128,9 +128,7 @@ function BorrowBookModal() {
             <div className="flex flex-row items-center gap-1 mb-1">
               <InfoIcon className="size-3.5 text-orange-400" />
               <p className="text-xs text-orange-400">
-                {isBorrowed.studentId === studentId
-                  ? "You have already borrowed this book."
-                  : "This book is currently borrowed by another student."}
+                {"This thesis is already borrowed."}
               </p>
             </div>
           )}

@@ -77,6 +77,7 @@ export const thesesRouter = createTRPCRouter({
         title: z.string(),
         abstract: z.string(),
         year: z.string(),
+        quantity: z.number(),
         members: z.string(),
         courseCode: z.string(),
         tagIds: z.number().array(),
@@ -95,9 +96,12 @@ export const thesesRouter = createTRPCRouter({
           courseCode,
           tagIds,
           thesisPhoto,
+          quantity,
         },
       }) => {
+        const thesis = await ctx.db.theses.findUnique({ where: { id } });
         if (id) {
+          if (!thesis) throw new Error("No thesis found.");
           await ctx.db.thesesTags.deleteMany({
             where: {
               thesisId: id,
@@ -112,6 +116,8 @@ export const thesesRouter = createTRPCRouter({
             year: new Date(year),
             members,
             courseCode,
+            quantity,
+            available: quantity,
             thesisPhoto,
             Tags: {
               createMany: {
@@ -124,10 +130,12 @@ export const thesesRouter = createTRPCRouter({
             abstract,
             year: new Date(year),
             members,
+            quantity,
+            available: thesis!.available + (quantity - thesis!.quantity),
             courseCode,
             thesisPhoto,
             Tags: {
-              deleteMany : {},
+              deleteMany: {},
               createMany: {
                 data: tagIds.map((tagId) => ({ tagId })),
               },
@@ -212,21 +220,34 @@ export const thesesRouter = createTRPCRouter({
         where: {
           id: thesisBorrowId,
         },
+        include: {
+          Thesis: true,
+        },
       });
 
       if (!borrow) throw new Error("No Borrow Found");
       const returnedAt = new Date();
       const borrowDueAt = borrow.borrowDueAt || new Date();
       const isPenalty = isDateBAfterDateA(borrowDueAt, returnedAt);
-      return await ctx.db.studentBorrow.update({
-        where: {
-          id: thesisBorrowId,
-        },
-        data: {
-          status: "RETURNED",
-          returnedAt,
-          isPenalty,
-        },
+      return await ctx.db.$transaction(async (tx) => {
+        await tx.theses.update({
+          where: {
+            id: borrow.Thesis.id,
+          },
+          data: {
+            available: borrow.Thesis.available + 1,
+          },
+        });
+        return await tx.studentBorrow.update({
+          where: {
+            id: thesisBorrowId,
+          },
+          data: {
+            status: "RETURNED",
+            returnedAt,
+            isPenalty,
+          },
+        });
       });
     }),
 });

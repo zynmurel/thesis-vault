@@ -2,13 +2,14 @@
 import React from "react";
 import ThesisDisplay from "./_components/thesisDisplay";
 import { CornerUpLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import ReviewDisplay from "./_components/reviewDisplay";
 import { Button } from "@/components/ui/button-small";
 
 function ThesiPage() {
   const router = useRouter();
-  const onBack = () => router.back();
+  const { studentId } = useParams()
+  const onBack = () => router.push(`/mobile/${studentId}/theses`);
   return (
     <div className="flex h-screen flex-col relative">
       <div className="bg-secondary flex h-10 justify-start items-center px-0 text-foreground/70" onClick={()=>onBack()}>

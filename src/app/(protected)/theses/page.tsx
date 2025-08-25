@@ -253,6 +253,7 @@ function Page() {
               <TableHead>Course</TableHead>
               <TableHead>Year</TableHead>
               <TableHead>Tags</TableHead>
+              <TableHead align="center" className=" text-center">Available</TableHead>
               <TableHead className=" text-center">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -270,6 +271,7 @@ function Page() {
                       </Badge>
                     ))}
                   </TableCell>
+                  <TableCell align="center">{`${thesis.available}/${thesis.quantity}`}</TableCell>
                   <TableCell>
                     <div className=" flex flex-row gap-1 items-center justify-center">
 

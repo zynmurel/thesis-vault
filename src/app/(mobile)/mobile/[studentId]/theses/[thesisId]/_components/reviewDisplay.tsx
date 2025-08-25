@@ -2,7 +2,7 @@ import React from 'react'
 
 function ReviewDisplay() {
   return (
-    <div>ReviewDisplay</div>
+    <div></div>
   )
 }
 

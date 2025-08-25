@@ -25,8 +25,8 @@ model Admin {
     password                String
     createdAt               DateTime               @default(now())
     updatedAt               DateTime               @updatedAt
-    BorrowDueDateSettings   BorrowDueDateSettings? 
-    BorrowLimitSettings     BorrowLimitSettings?  
+    BorrowDueDateSettings   BorrowDueDateSettings?
+    BorrowLimitSettings     BorrowLimitSettings?
 }
 
 model BorrowDueDateSettings {
@@ -34,7 +34,7 @@ model BorrowDueDateSettings {
     dayCount  Int      @default(3)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
-    Admin     Admin? @relation(fields: [adminId], references: [id])
+    Admin     Admin?   @relation(fields: [adminId], references: [id])
 }
 
 model BorrowLimitSettings {
@@ -42,7 +42,7 @@ model BorrowLimitSettings {
     limitCount Int      @default(2)
     createdAt  DateTime @default(now())
     updatedAt  DateTime @updatedAt
-    Admin      Admin? @relation(fields: [adminId], references: [id])
+    Admin      Admin?   @relation(fields: [adminId], references: [id])
 }
 
 model Department {
@@ -121,6 +121,8 @@ model Theses {
     abstract    String
     title       String
     members     String
+    quantity    Int              @default(1)
+    available    Int              @default(1)
     isAvailable Boolean          @default(true)
     year        DateTime
     createdAt   DateTime         @default(now())
