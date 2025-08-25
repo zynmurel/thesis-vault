@@ -33,7 +33,7 @@ export const BorrowStatus = ({
   return (
     <Badge
       variant={"default"}
-      className={`${status === "BORROWED" ? "bg-orange-500" : status === "RETURNED" ? "bg-blue-500" : "bg-gray-500"}`}
+      className={`${status === "BORROWED" ? "bg-orange-500" : status === "RETURNED" ? "bg-blue-500" : ( status === "CANCELLED" ? "bg-red-500" : "bg-gray-500")}`}
     >
       {status}
     </Badge>

@@ -148,9 +148,10 @@ export const thesesRouter = createTRPCRouter({
     .input(
       z.object({
         thesisId: z.string(),
+        borrowId: z.number().optional(),
       }),
     )
-    .query(async ({ ctx, input: { thesisId } }) => {
+    .query(async ({ ctx, input: { thesisId, borrowId } }) => {
       const t = await ctx.db.theses.findUnique({
         where: {
           id: thesisId,
@@ -164,14 +165,16 @@ export const thesesRouter = createTRPCRouter({
           Course: true,
           Ratings: true,
           StudentBorrows: {
-            where: {
-              status: { not: "RETURNED" },
-            },
+            where: borrowId
+              ? { id: borrowId }
+              : {
+                  status: { notIn: ["RETURNED", "CANCELLED"] },
+                },
+
             include: { Student: true },
             orderBy: {
               createdAt: "desc",
             },
-            take: 1,
           },
         },
       });
@@ -207,6 +210,43 @@ export const thesesRouter = createTRPCRouter({
             settings?.BorrowDueDateSettings?.dayCount || 3,
           ),
         },
+      });
+    }),
+  declineThesisBorrow: protectedProcedure
+    .input(
+      z.object({
+        thesisBorrowId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input: { thesisBorrowId } }) => {
+      const borrow = await ctx.db.studentBorrow.findUnique({
+        where: {
+          id: thesisBorrowId,
+          status: "PENDING",
+        },
+        include: {
+          Thesis: true,
+        },
+      });
+
+      if (!borrow) throw new Error("No Borrow Found");
+      return await ctx.db.$transaction(async (tx) => {
+        await tx.theses.update({
+          where: {
+            id: borrow.Thesis.id,
+          },
+          data: {
+            available: borrow.Thesis.available + 1,
+          },
+        });
+        return await tx.studentBorrow.update({
+          where: {
+            id: thesisBorrowId,
+          },
+          data: {
+            status: "CANCELLED",
+          },
+        });
       });
     }),
   confirmThesisReturn: protectedProcedure

@@ -51,6 +51,7 @@ function Page() {
     parseAsString.withDefault(""),
   );
   const [_, setQR] = useQueryState("ScanQR", parseAsString);
+  const [_b, setQRBorrowId] = useQueryState("ScanQRBorrowId", parseAsInteger);
 
   const [pagination] = useQueryStates({
     skip: parseAsInteger.withDefault(0),
@@ -80,7 +81,7 @@ function Page() {
               <Badge
                 key={stat}
                 variant={"default"}
-                className={`${stat === "BORROWED" ? "bg-orange-500" : stat === "RETURNED" ? "bg-blue-500" : ( stat === "OVERDUE" ? "bg-red-500" : "bg-gray-500")}`}
+                className={`${stat === "BORROWED" ? "bg-orange-500" : stat === "RETURNED" ? "bg-blue-500" : ( ["OVERDUE", "CANCELLED"].includes(stat) ? "bg-red-500" : "bg-gray-500")}`}
               >
                 {stat}
                 <div
@@ -142,7 +143,7 @@ function Page() {
               <PopoverContent className="w-64">
                 <h4 className="mb-2 text-sm font-medium">Filter by Status</h4>
                 <div className="flex max-h-60 flex-col gap-2 overflow-auto">
-                  {["PENDING", "BORROWED", "RETURNED", "OVERDUE"].map((stat) => (
+                  {["PENDING", "BORROWED", "RETURNED", "OVERDUE", "CANCELLED"].map((stat) => (
                     <label key={stat} className="flex items-center gap-2">
                       <Checkbox
                         checked={filterStatus?.includes(stat)}
@@ -223,7 +224,10 @@ function Page() {
                   <TableCell>
                     <div className="flex flex-row items-center justify-center gap-1">
                       <Button
-                        onClick={() => setQR(borrow.Thesis.id)}
+                        onClick={() => {
+                          setQR(borrow.Thesis.id);
+                          setQRBorrowId(borrow.id)
+                        }}
                         variant={"outline"}
                         size={"sm"}
                         className="text-xs"
