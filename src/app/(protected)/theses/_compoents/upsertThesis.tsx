@@ -117,7 +117,7 @@ export default function UpsertThesis() {
   });
 
   const onSubmit = async (data: ThesisFormValues) => {
-    if (data.quantity <= thesis!.quantity - thesis!.available) {
+    if (!isCreate && (data.quantity <= thesis!.quantity - thesis!.available)) {
       form.setError("quantity", { message : ``})
      toast.error(`Cannot deduct quantity less than the borrowed thesis (${thesis!.quantity - thesis!.available})`);
       return;

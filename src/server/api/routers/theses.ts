@@ -100,7 +100,7 @@ export const thesesRouter = createTRPCRouter({
         },
       }) => {
         const thesis = await ctx.db.theses.findUnique({ where: { id } });
-        if (id) {
+        if (id !== "create") {
           if (!thesis) throw new Error("No thesis found.");
           await ctx.db.thesesTags.deleteMany({
             where: {
@@ -131,7 +131,8 @@ export const thesesRouter = createTRPCRouter({
             year: new Date(year),
             members,
             quantity,
-            available: thesis!.available + (quantity - thesis!.quantity),
+            available:
+              (thesis?.available || 0) + (quantity - (thesis?.quantity || 0)),
             courseCode,
             thesisPhoto,
             Tags: {
