@@ -223,13 +223,13 @@ const ThesisForm = ({
 
   const handleChangeLogo = (event: any) => {
     const file = event.target.files[0];
-    if (file.size > 2 * 1024 * 1024) {
-      form.setError("thesisPhoto", {
-        type: "manual",
-        message: "File size should not exceed 2MB",
-      });
-      return;
-    }
+    // if (file.size > 2 * 1024 * 1024) {
+    //   form.setError("thesisPhoto", {
+    //     type: "manual",
+    //     message: "File size should not exceed 2MB",
+    //   });
+    //   return;
+    // }
     const reader = new FileReader();
     reader.onload = () => {
       const dataURL = reader.result as string;
