@@ -76,6 +76,9 @@ model Students {
     firstName  String
     middleName String?
     lastName   String
+    year       Int           @default(1)
+    section    String        @default("")
+    contactNo  String?       @default("")
     gender     StudentGender
     createdAt  DateTime      @default(now())
     updatedAt  DateTime      @updatedAt
@@ -122,7 +125,7 @@ model Theses {
     title       String
     members     String
     quantity    Int              @default(1)
-    available    Int              @default(1)
+    available   Int              @default(1)
     isAvailable Boolean          @default(true)
     year        DateTime
     createdAt   DateTime         @default(now())

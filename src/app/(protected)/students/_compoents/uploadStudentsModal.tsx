@@ -66,13 +66,14 @@ export default function UploadStudentsModal() {
         const headers = rows[0] as string[];
 
         const requiredHeaders = [
-          "Student ID",
+          "Level",
+          "Section",
+          "ID Number",
           "First Name",
           "Last Name",
           "Gender",
           "Email",
           "Contact Number",
-          "Address",
         ];
 
         const missingHeaders = requiredHeaders.filter(
@@ -86,20 +87,26 @@ export default function UploadStudentsModal() {
         }
 
         const json = XLSX.utils.sheet_to_json(sheet as XLSX.WorkSheet) as {
-          "Student ID": string;
+          Level: number;
+          Section: string;
+          "ID Number": string;
           "First Name": string;
           "Middle Name"?: string | null;
           "Last Name": string;
           Gender?: string | null;
           Email?: string | null;
+          "Contact Number"?: string;
         }[];
 
         const students = json.map((data) => ({
-          studentId: data["Student ID"],
+          year: Number(data["Level"]),
+          section: data["Section"],
+          studentId: data["ID Number"],
           firstName: data["First Name"],
           middleName: data["Middle Name"],
           lastName: data["Last Name"],
           email: data["Email"],
+          contactNo: data["Contact Number"],
           gender: data["Gender"]?.toLowerCase()?.includes("f")
             ? "FEMALE"
             : "MALE",
@@ -120,7 +127,7 @@ export default function UploadStudentsModal() {
       await utils.students.getMany.invalidate();
       onClose();
       setExcelData([]);
-      setCourseCode(null)
+      setCourseCode(null);
       toast.success("Add Success");
     },
     onError: () => {
@@ -131,7 +138,8 @@ export default function UploadStudentsModal() {
   const onClose = () => setModal(null);
 
   const onAddStudents = () => {
-    excelData.length && courseCode &&
+    excelData.length &&
+      courseCode &&
       mutate({
         students: excelData.map((stud) => ({
           studentId: stud.studentId,
@@ -156,10 +164,13 @@ export default function UploadStudentsModal() {
             Upload students using a .xlsx, .xls, or .csv file.
           </DialogDescription>
         </DialogHeader>
-        {(excelData.length && courseCode) ? (
+        {excelData.length && courseCode ? (
           <>
             <div className="flex w-full flex-row items-end justify-between">
-              <p className="text-sm font-bold">{courses?.find(c=>c.code === courseCode)?.title} - {excelData.length} Students</p>
+              <p className="text-sm font-bold">
+                {courses?.find((c) => c.code === courseCode)?.title} -{" "}
+                {excelData.length} Students
+              </p>
               <Button
                 onClick={() => setExcelData([])}
                 variant={"outline"}
@@ -174,7 +185,7 @@ export default function UploadStudentsModal() {
                 <Table className="relative max-w-full text-xs">
                   <TableHeader className="top-0">
                     <TableRow>
-                      <TableHead>Student ID</TableHead>
+                      <TableHead>ID Number</TableHead>
                       <TableHead>First Name</TableHead>
                       <TableHead>Middle Name</TableHead>
                       <TableHead>Last Name</TableHead>
@@ -202,7 +213,7 @@ export default function UploadStudentsModal() {
               </div>
               <div className="mt-5 flex w-full justify-between">
                 <p className="text-primary/80 text-xs">
-                  If a student with the same Student ID already exists, their
+                  If a student with the same ID Number already exists, their
                   information will be updated instead of creating a duplicate.
                 </p>
 
@@ -235,22 +246,28 @@ export default function UploadStudentsModal() {
                       <Table className="text-xs">
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Student ID</TableHead>
+                            <TableHead>Level</TableHead>
+                            <TableHead>Section</TableHead>
+                            <TableHead>ID Number</TableHead>
                             <TableHead>First Name</TableHead>
                             <TableHead>Middle Name</TableHead>
                             <TableHead>Last Name</TableHead>
                             <TableHead>Gender</TableHead>
                             <TableHead>Email</TableHead>
+                            <TableHead>Contact Number</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           <TableRow>
-                            <TableCell>2023002</TableCell>
+                            <TableCell>1</TableCell>
+                            <TableCell>A</TableCell>
+                            <TableCell>2024-1091-1</TableCell>
                             <TableCell>Maria</TableCell>
                             <TableCell>Elsa</TableCell>
                             <TableCell>Santos</TableCell>
                             <TableHead>Female</TableHead>
                             <TableCell>student@example.com</TableCell>
+                            <TableCell>09*********</TableCell>
                           </TableRow>
                         </TableBody>
                       </Table>
@@ -259,13 +276,13 @@ export default function UploadStudentsModal() {
                 </Tooltip>
               </div>
             </TooltipProvider>
-            <div className="flex flex-row items-center gap-2 w-full mt-2">
+            <div className="mt-2 flex w-full flex-row items-center gap-2">
               <Select
                 onValueChange={(e) => setCourseCode(e)}
                 value={courseCode || undefined}
               >
                 <SelectTrigger className="flex-1">
-                  <SelectValue placeholder="Select Program"/>
+                  <SelectValue placeholder="Select Program" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -285,7 +302,10 @@ export default function UploadStudentsModal() {
                   </SelectGroup>
                 </SelectContent>
               </Select>
-              <CustomFileUpload disabled={!courseCode} handleFile={handleFile} />
+              <CustomFileUpload
+                disabled={!courseCode}
+                handleFile={handleFile}
+              />
             </div>
           </div>
         )}
@@ -296,10 +316,10 @@ export default function UploadStudentsModal() {
 
 export function CustomFileUpload({
   handleFile,
-  disabled = false
+  disabled = false,
 }: {
   handleFile: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  disabled?:boolean
+  disabled?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
 

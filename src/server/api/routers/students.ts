@@ -49,6 +49,9 @@ export const studentsRouter = createTRPCRouter({
         middleName: z.string().optional(),
         lastName: z.string(),
         email: z.string().optional(),
+        year: z.number(),
+        section: z.string(),
+        contactNumber: z.string().optional(),
         gender: z.enum(["MALE", "FEMALE"]),
       }),
     )
@@ -64,6 +67,9 @@ export const studentsRouter = createTRPCRouter({
           lastName: input.lastName,
           email: input.email,
           gender: input.gender,
+          year: input.year,
+          section: input.section,
+          contactNo: input.contactNumber,
         },
         create: {
           courseCode: input.courseCode,
@@ -74,6 +80,9 @@ export const studentsRouter = createTRPCRouter({
           email: input.email,
           password: hashedPassword,
           gender: input.gender,
+          year: input.year,
+          section: input.section,
+          contactNo: input.contactNumber,
         },
       });
     }),

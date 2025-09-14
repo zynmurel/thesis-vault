@@ -27,12 +27,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { parseAsString, useQueryState } from "nuqs";
+import {
+  parseAsInteger,
+  parseAsString,
+  useQueryState,
+  useQueryStates,
+} from "nuqs";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/trpc/react";
 import { LoaderCircle, SendHorizonal } from "lucide-react";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 const formSchema = z.object({
   id: z.string().optional(),
@@ -42,6 +48,9 @@ const formSchema = z.object({
   middleName: z.string().optional(),
   lastName: z.string(),
   email: z.string().optional(),
+  year: z.number(),
+  section: z.string(),
+  contactNumber: z.string().optional(),
   gender: z.enum(["MALE", "FEMALE"]),
 });
 type FormValues = z.infer<typeof formSchema>;
@@ -49,6 +58,17 @@ type FormValues = z.infer<typeof formSchema>;
 export default function AddStudentModal() {
   const utils = api.useUtils();
   const [modal, setModal] = useQueryState("create", parseAsString);
+  const [courseCode] = useQueryState(
+    "courseCode",
+    parseAsString.withDefault("ALL"),
+  );
+  const [studentId] = useQueryState("studentId", parseAsString.withDefault(""));
+  const [pagination] = useQueryStates({
+    skip: parseAsInteger.withDefault(0),
+    take: parseAsInteger.withDefault(10),
+  });
+
+  const isCreate = modal === "open";
 
   const { data: courses, isLoading: coursesIsLoading } =
     api.courses.getAll.useQuery();
@@ -57,12 +77,20 @@ export default function AddStudentModal() {
     onSuccess: async () => {
       await utils.students.getMany.invalidate();
       onClose();
-      toast.success("Success, Students submitted.");
+      toast.success(`Success, student ${isCreate ? "added":"updated"}.`);
     },
     onError: () => {
       toast.error("Failed to submit student");
     },
   });
+
+  const { data: students, isLoading: studentsIsLoading } =
+    api.students.getMany.useQuery({
+      courseCode,
+      studentId,
+      skip: pagination.skip,
+      take: pagination.take,
+    });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -74,6 +102,9 @@ export default function AddStudentModal() {
       lastName: "",
       email: "",
       gender: "MALE",
+      year: 1,
+      section: undefined,
+      contactNumber: undefined,
     },
   });
 
@@ -81,16 +112,35 @@ export default function AddStudentModal() {
 
   const onSubmit = (values: FormValues) => {
     mutate({
-      id : modal || undefined,
-      ...values
-    })
+      id: modal || undefined,
+      ...values,
+    });
   };
+
+  useEffect(() => {
+    const student = students?.find((s) => s.id === modal);
+    console.log(student)
+    if (student) {
+      form.reset({
+        courseCode: student.courseCode,
+        studentId: student.studentId,
+        firstName: student.firstName,
+        middleName: student.middleName || undefined,
+        lastName: student.lastName,
+        email: student.email || undefined,
+        gender: student.gender,
+        year: student.year,
+        section: student.section,
+        contactNumber: student.contactNo || undefined,
+      });
+    }
+  }, [modal]);
 
   return (
     <Dialog open={!!modal} onOpenChange={onClose}>
       <DialogContent className="md:min-w-3xl">
         <DialogHeader>
-          <DialogTitle>Add Student</DialogTitle>
+          <DialogTitle>{isCreate ? "Add" : "Update"} Student</DialogTitle>
           <DialogDescription>Input student details.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -191,9 +241,6 @@ export default function AddStudentModal() {
                   </FormItem>
                 )}
               />
-            </div>
-
-            <div className="grid gap-3 gap-y-6 sm:grid-cols-2">
               <FormField
                 control={form.control}
                 name="gender"
@@ -218,7 +265,22 @@ export default function AddStudentModal() {
                   </FormItem>
                 )}
               />
+            </div>
 
+            <div className="grid gap-3 gap-y-6 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="contactNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contact Number (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter contact number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="email"
@@ -227,6 +289,57 @@ export default function AddStudentModal() {
                     <FormLabel>Email (Optional)</FormLabel>
                     <FormControl>
                       <Input placeholder="Enter Email" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="year"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Year</FormLabel>
+                    <FormControl>
+                      <Select
+                        onValueChange={(e) => {
+                          field.onChange(Number(e));
+                        }}
+                        defaultValue={String(field.value)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select Year" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[
+                            { label: "1st Year", value: 1 },
+                            { label: "2nd Year", value: 2 },
+                            { label: "3rd Year", value: 3 },
+                            { label: "4th Year", value: 4 },
+                          ].map((level) => {
+                            return (
+                              <SelectItem key={level.value} value={String(level.value)}>
+                                {level.label}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="section"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Section</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter section" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

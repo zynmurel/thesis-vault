@@ -117,9 +117,11 @@ export default function UpsertThesis() {
   });
 
   const onSubmit = async (data: ThesisFormValues) => {
-    if (!isCreate && (data.quantity <= thesis!.quantity - thesis!.available)) {
-      form.setError("quantity", { message : ``})
-     toast.error(`Cannot deduct quantity less than the borrowed thesis (${thesis!.quantity - thesis!.available})`);
+    if (!isCreate && data.quantity <= thesis!.quantity - thesis!.available) {
+      form.setError("quantity", { message: `` });
+      toast.error(
+        `Cannot deduct quantity less than the borrowed thesis (${thesis!.quantity - thesis!.available})`,
+      );
       return;
     }
     setIsLoading(true);
@@ -187,14 +189,14 @@ export default function UpsertThesis() {
             <LoaderCircle className="animate-spin" /> Loading...
           </div>
         ) : (
-          <ThesisForm
-            form={form}
-            onSubmit={onSubmit}
-            onClose={onClose}
-            isPending={isPending || isLoading}
-            thesisPhoto={thesisPhoto}
-            setThesisPhoto={setThesisPhoto}
-          />
+            <ThesisForm
+              form={form}
+              onSubmit={onSubmit}
+              onClose={onClose}
+              isPending={isPending || isLoading}
+              thesisPhoto={thesisPhoto}
+              setThesisPhoto={setThesisPhoto}
+            />
         )}
       </DialogContent>
     </Dialog>
@@ -243,7 +245,7 @@ const ThesisForm = ({
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="mt-2 space-y-4 px-2">
+        <div className="mt-2 space-y-4 px-2 max-h-[70vh] overflow-y-scroll">
           <FormField
             control={form.control}
             name="thesisPhoto"
@@ -317,7 +319,7 @@ const ThesisForm = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="max-h-96">
-                      {years.map((year) => (
+                      {[...years].reverse().map((year) => (
                         <SelectItem key={year} value={year}>
                           {year}
                         </SelectItem>
