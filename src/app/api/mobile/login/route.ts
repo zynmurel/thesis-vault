@@ -2,6 +2,19 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
 import bcrypt from "bcryptjs";
 
+// Helper to add CORS headers
+function withCORS(response: NextResponse) {
+  response.headers.set("Access-Control-Allow-Origin", "*"); // ⚠️ allow all (change later)
+  response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  return response;
+}
+
+// Handle preflight requests (OPTIONS)
+export async function OPTIONS() {
+  return withCORS(new NextResponse(null, { status: 204 }));
+}
+
 export async function POST(req: NextRequest) {
     const { studentId, password } = await req.json().then((data) => {
         return { ...data } as { studentId: string, password: string }
