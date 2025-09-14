@@ -21,9 +21,10 @@ import {
   useQueryState,
   useQueryStates,
 } from "nuqs";
-import React from "react";
-import StudentBag from "../_components/studentBag";
+import React, { useState } from "react";
 import type { Tags, Theses, ThesesTags } from "@prisma/client";
+import ThesiPage from "./[thesisId]/_components/thesisPage";
+import StudentBag from "../_components/studentBag";
 
 function Page() {
   const [filters, setFilters] = useQueryStates({
@@ -41,7 +42,6 @@ function Page() {
   const { data, isLoading } = api.mobile.theses.getFilters.useQuery();
   return (
     <div className="relative flex h-screen max-h-screen w-full flex-col">
-      <StudentBag className="bg-primary text-background absolute bottom-3 left-3 flex size-10 items-center justify-center rounded-full border opacity-80 hover:opacity-100" />
       <div
         className={`bg-sidebar flex w-full flex-col gap-2 py-2 pb-3 shadow transition-all duration-300 ease-in-out ${showFilter ? "max-h-[600px]" : "max-h-[50px]"}`}
       >
@@ -59,6 +59,7 @@ function Page() {
           >
             <SlidersHorizontal className="size-3.5" />
           </Button>
+          <StudentBag/>
         </div>
         {
           <div
@@ -214,16 +215,15 @@ const Thesis = ({
   };
   index: number;
 }) => {
-  const [_, setShowBorrow] = useQueryState(
-    "borrow",
-    parseAsString,
-  );
+  const [_b, setShowBorrow] = useQueryState("borrow", parseAsString);
+  const [_v, setShowView] = useState<null | string>(null);
   const { studentId } = useParams();
   const utils = api.useUtils();
   const router = useRouter();
 
-  const { data: bag } =
-    api.mobile.student.getBag.useQuery({ studentId: String(studentId) });
+  const { data: bag } = api.mobile.student.getBag.useQuery({
+    studentId: String(studentId),
+  });
 
   const { mutate, isPending } = api.mobile.student.putThesisInBag.useMutation({
     onSuccess: async () => {
@@ -243,11 +243,15 @@ const Thesis = ({
       studentId: String(studentId),
     });
   };
+  const onClose = () => setShowView(null);
   return (
     <div
       key={index}
       className="bg-background flex flex-col gap-1 rounded-xl border p-2 shadow"
     >
+      {_v && <div className="absolute top-0 right-0 bottom-0 left-0 bg-white z-50">
+        <ThesiPage thesisId={_v} onClose={onClose} />
+      </div>}
       <div className="flex flex-row items-center gap-2">
         <Image
           width={50}
@@ -280,7 +284,7 @@ const Thesis = ({
         <ButtonSmall
           variant={"outline"}
           className="flex-1 p-1"
-          onClick={() => onView(thesis.id)}
+          onClick={() => setShowView(thesis.id)}
         >
           View
         </ButtonSmall>
@@ -292,7 +296,12 @@ const Thesis = ({
         >
           {isAdded ? "In Bag" : isPending ? "Adding..." : "Add To Bag"}
         </ButtonSmall>
-        <ButtonSmall className="flex-1 p-1" onClick={()=>setShowBorrow(thesis.id)}>Borrow</ButtonSmall>
+        <ButtonSmall
+          className="flex-1 p-1"
+          onClick={() => setShowBorrow(thesis.id)}
+        >
+          Borrow
+        </ButtonSmall>
       </div>
     </div>
   );

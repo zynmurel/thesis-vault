@@ -236,7 +236,7 @@ function Page() {
         </div>
         <Button onClick={onCreateThesis}>
           <Plus />
-          <p className="hidden pr-1 sm:flex">Thesis</p>
+          <p className="hidden pr-1 sm:flex">Add</p>
         </Button>
       </div>
       <DisplayFilter

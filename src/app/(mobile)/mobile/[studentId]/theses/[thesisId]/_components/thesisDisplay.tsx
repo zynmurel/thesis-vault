@@ -11,8 +11,8 @@ import { Button } from "@/components/ui/button";
 import { RatingRoundedStar } from "@/app/_components/react-rating";
 import { parseAsString, useQueryState } from "nuqs";
 
-function ThesisDisplay() {
-  const { thesisId, studentId } = useParams();
+function ThesisDisplay({ thesisId }: { thesisId: string }) {
+  const { studentId } = useParams();
   const utils = api.useUtils();
 
   const [_, setShowBorrow] = useQueryState("borrow", parseAsString);
@@ -63,7 +63,7 @@ function ThesisDisplay() {
     });
   };
 
-  const isBorrowed = data?.StudentBorrows.length
+  const isBorrowed = data?.StudentBorrows.length;
 
   return (
     <div className="text-foreground/80 flex flex-col gap-1">
@@ -93,7 +93,7 @@ function ThesisDisplay() {
           />{" "}
           <p>({data.Ratings.length})</p>
         </div>
-        <div className=" px-2">
+        <div className="px-2">
           {isBorrowed ? (
             <Badge className="bg-red-500 px-3">Not Available</Badge>
           ) : (

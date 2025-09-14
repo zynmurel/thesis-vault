@@ -66,14 +66,14 @@ export default function UploadStudentsModal() {
         const headers = rows[0] as string[];
 
         const requiredHeaders = [
-          "Level",
-          "Section",
-          "ID Number",
+          "Year Level",
+          // "Section",
+          "Student No.",
           "First Name",
           "Last Name",
-          "Gender",
+          "Sex",
           "Email",
-          "Contact Number",
+          // "Contact Number",
         ];
 
         const missingHeaders = requiredHeaders.filter(
@@ -87,27 +87,27 @@ export default function UploadStudentsModal() {
         }
 
         const json = XLSX.utils.sheet_to_json(sheet as XLSX.WorkSheet) as {
-          Level: number;
+          'Year Level': number;
           Section: string;
-          "ID Number": string;
+          "Student No.": string;
           "First Name": string;
           "Middle Name"?: string | null;
           "Last Name": string;
-          Gender?: string | null;
+          Sex?: string | null;
           Email?: string | null;
           "Contact Number"?: string;
         }[];
 
         const students = json.map((data) => ({
-          year: Number(data["Level"]),
+          year: Number(data["Year Level"]),
           section: data["Section"],
-          studentId: data["ID Number"],
+          studentId: data["Student No."],
           firstName: data["First Name"],
           middleName: data["Middle Name"],
           lastName: data["Last Name"],
           email: data["Email"],
           contactNo: data["Contact Number"],
-          gender: data["Gender"]?.toLowerCase()?.includes("f")
+          gender: data["Sex"]?.toLowerCase()?.includes("f")
             ? "FEMALE"
             : "MALE",
         })) as Students[];
@@ -185,7 +185,7 @@ export default function UploadStudentsModal() {
                 <Table className="relative max-w-full text-xs">
                   <TableHeader className="top-0">
                     <TableRow>
-                      <TableHead>ID Number</TableHead>
+                      <TableHead>Student No.</TableHead>
                       <TableHead>First Name</TableHead>
                       <TableHead>Middle Name</TableHead>
                       <TableHead>Last Name</TableHead>
@@ -213,7 +213,7 @@ export default function UploadStudentsModal() {
               </div>
               <div className="mt-5 flex w-full justify-between">
                 <p className="text-primary/80 text-xs">
-                  If a student with the same ID Number already exists, their
+                  If a student with the same Student No. already exists, their
                   information will be updated instead of creating a duplicate.
                 </p>
 
@@ -248,7 +248,7 @@ export default function UploadStudentsModal() {
                           <TableRow>
                             <TableHead>Level</TableHead>
                             <TableHead>Section</TableHead>
-                            <TableHead>ID Number</TableHead>
+                            <TableHead>Student No.</TableHead>
                             <TableHead>First Name</TableHead>
                             <TableHead>Middle Name</TableHead>
                             <TableHead>Last Name</TableHead>

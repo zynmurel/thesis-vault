@@ -7,7 +7,7 @@ import { api } from '@/trpc/react';
 function Layout({children} : {children:React.ReactNode}) {
   api.mobile.student.getThesisDueDayCount.useQuery()
   return (
-    <div>
+    <div className='relative'>
       {children}
       <BorrowBookModal/>
       <SuccessBorrowThesisModal/>

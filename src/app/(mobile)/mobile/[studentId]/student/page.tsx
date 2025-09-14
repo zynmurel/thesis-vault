@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import { useParams } from "next/navigation";
 import React from "react";
-import StudentBag from "../_components/studentBag";
 import PendingBorrows from "./_components/pending-borrows";
 import RecentActivity from "./_components/recent-activity";
 
@@ -34,7 +33,6 @@ function Page() {
             </div>
           </div>
           <div>
-            <StudentBag className="bg-primary rounded-full p-1.5 text-white" />
           </div>
         </div>
         <div className="flex flex-col">
