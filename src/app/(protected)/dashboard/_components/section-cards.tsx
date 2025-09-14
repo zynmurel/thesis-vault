@@ -9,103 +9,54 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { api } from "@/trpc/react";
-import { ArrowUpRight, LoaderCircle } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowUpRight,
+  BookOpen,
+  Clock,
+  LoaderCircle,
+  Users,
+} from "lucide-react";
+import ReportCard from "./reports-card";
 
 export function SectionCards() {
   const { data, isLoading } = api.dashboard.getDashboardCounts.useQuery();
   return (
-    <div className="*:data-[slot=card]:from-secondary/20 *:data-[slot=card]:to-secondary/5 dark:*:data-[slot=card]:bg-card grid gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs md:grid-cols-2 xl:grid-cols-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>📚 Total Books</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {isLoading ? <LoaderCircle className=" size-9 animate-spin" strokeWidth={2.5} /> : data?.booksCount}
-          </CardTitle>
-          <CardAction>
-            <Badge
-              variant="outline"
-              className="cursor-pointer bg-white hover:opacity-80"
-            >
-              <ArrowUpRight />
-              View
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 opacity-50">
-            Total number of thesis books
-          </div>
-        </CardFooter>
-      </Card>
-
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>⏳ Books Not Yet Returned</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {isLoading ? <LoaderCircle className=" size-9 animate-spin" strokeWidth={2.5} /> : data?.borrowedCount}
-          </CardTitle>
-          <CardAction>
-            <Badge
-              variant="outline"
-              className="cursor-pointer bg-white hover:opacity-80"
-            >
-              <ArrowUpRight />
-              View
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 opacity-60">
-            Currently borrowed books not yet returned
-          </div>
-        </CardFooter>
-      </Card>
-
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>⚠️ Overdue Books</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {isLoading ? <LoaderCircle className=" size-9 animate-spin" strokeWidth={2.5} /> : data?.overDueCount}
-          </CardTitle>
-          <CardAction>
-            <Badge
-              variant="outline"
-              className="cursor-pointer bg-white hover:opacity-80"
-            >
-              <ArrowUpRight />
-              View
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 opacity-60">
-            Books past due date without return
-          </div>
-        </CardFooter>
-      </Card>
-
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>🧑‍🎓 Students with Penalties</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {isLoading ? <LoaderCircle className=" size-9 animate-spin" strokeWidth={2.5} /> : data?.studentWithPenaltyCount}
-          </CardTitle>
-          <CardAction>
-            <Badge
-              variant="outline"
-              className="cursor-pointer bg-white hover:opacity-80"
-            >
-              <ArrowUpRight />
-              View
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 opacity-60">
-            Unique students with active penalties
-          </div>
-        </CardFooter>
-      </Card>
+    <div className=" grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <ReportCard
+        title="Total Theses"
+        value={data?.booksCount ? String(data?.booksCount) : "0"}
+        changeType="positive"
+        icon={BookOpen}
+        iconBgColor="bg-blue-500"
+        description="Across CCIS department"
+      />
+      <ReportCard
+        title="Active Students"
+        value={data?.studentCount ? String(data.studentCount) : "0"}
+        changeType="positive"
+        icon={Users}
+        iconBgColor="bg-green-500"
+        description="Registered students"
+      />
+      <ReportCard
+        title="Active Borrows"
+        value={data?.borrowedCount ? String(data?.borrowedCount) : "0"}
+        change="-5% from last week"
+        changeType="negative"
+        icon={Clock}
+        iconBgColor="bg-amber-500"
+        description="Currently borrowed items"
+      />
+      <ReportCard
+        title="Overdue Items"
+        value={data?.overDueCount ? String(data?.overDueCount) : "0"}
+        change="3 new today"
+        changeType="negative"
+        icon={AlertTriangle}
+        iconBgColor="bg-red-500"
+        description="Requires attention"
+      />
     </div>
   );
 }

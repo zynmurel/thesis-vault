@@ -1,17 +1,19 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button-small";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/trpc/react";
 import { format } from "date-fns";
-import { Activity, BookOpen, BookText } from "lucide-react";
+import { Activity, BookOpen } from "lucide-react";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import React from "react";
 
-function RecentActivity() {
+function RecentActivity({
+  setViewThesis,
+}: {
+  setViewThesis: React.Dispatch<React.SetStateAction<string | null>>;
+}) {
   const { studentId } = useParams();
-  const router = useRouter();
   const { data, isLoading } =
     api.mobile.student.getStudentRecentActivity.useQuery(
       {
@@ -20,7 +22,7 @@ function RecentActivity() {
       { enabled: !!studentId },
     );
   const onView = (thesisId: string) => {
-    router.push(`theses/${thesisId}`);
+    setViewThesis(thesisId);
   };
 
   return (
@@ -43,18 +45,21 @@ function RecentActivity() {
               <div
                 key={index}
                 onClick={() => onView(borrows.thesisId)}
-                className={`flex flex-row items-center gap-2 ${!!index && 'border-t'} bg-white p-2`}
+                className={`flex flex-row items-center gap-2 ${!!index && "border-t"} bg-white p-2`}
               >
-                <div className="text-foreground/80 grid gap-1 text-xs w-full">
-                  <div className="flex flex-row items-center justify-between w-full">
+                <div className="text-foreground/80 grid w-full gap-1 text-xs">
+                  <div className="flex w-full flex-row items-center justify-between">
                     <p className="text-[10px]">
                       Request Date : {format(borrows.createdAt, "MM/dd/yyy")}
                     </p>
-                    <Badge className={`text-[10px] text-white ${borrows.status === "RETURNED" ? "bg-blue-500" : ( borrows.status === "BORROWED" ? "bg-orange-400" : "")}`} variant={"outline"}>
+                    <Badge
+                      className={`text-[10px] text-white ${borrows.status === "RETURNED" ? "bg-blue-500" : borrows.status === "BORROWED" ? "bg-orange-400" : ""}`}
+                      variant={"outline"}
+                    >
                       {borrows.status}
                     </Badge>
                   </div>
-                  <div className="flex h-full flex-row gap-1 w-full">
+                  <div className="flex h-full w-full flex-row gap-1">
                     <div className="h-full w-15">
                       <Image
                         width={200}

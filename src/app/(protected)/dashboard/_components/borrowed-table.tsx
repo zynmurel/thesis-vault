@@ -24,10 +24,11 @@ import { format } from "date-fns";
 function BorrowedBooksTable() {
   const { data, isLoading } = api.dashboard.getDashboardBorrows.useQuery();
   return (
-    <Card className="from-secondary/10 to-secondary/0 @container/card bg-gradient-to-t">
+    <Card className="rounded-xl border border-gray-100 bg-white p-2 py-8 shadow-sm transition-shadow duration-200 hover:shadow-md">
       <CardHeader>
-        <CardTitle className="font-semibold tabular-nums flex flex-row gap-1 items-center">
-          <BookUp2 className=" size-5"/>Latest Borrows
+        <CardTitle className="flex flex-row items-center gap-1 font-semibold tabular-nums">
+          <BookUp2 className="size-5" />
+          Latest Borrows
         </CardTitle>
         <CardDescription>List of latest book borrows.</CardDescription>
         <CardAction>
@@ -55,20 +56,22 @@ function BorrowedBooksTable() {
               <TableRow key={i}>
                 <TableCell>{formatName(borrow.Student)}</TableCell>
                 <TableCell>{borrow.Thesis.title}</TableCell>
-                <TableCell>{format(borrow.updatedAt, "MM/dd/yyyy, hh:mm:aa")}</TableCell>
+                <TableCell>
+                  {format(borrow.updatedAt, "MM/dd/yyyy, hh:mm:aa")}
+                </TableCell>
                 <TableCell></TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
         {isLoading ? (
-          <div className="flex w-full flex-row items-center justify-center gap-2 p-10 text-sm text-muted-foreground">
+          <div className="text-muted-foreground flex w-full flex-row items-center justify-center gap-2 p-10 text-sm">
             <LoaderCircle className="animate-spin" />
             Loading Borrows
           </div>
         ) : !data?.length ? (
-          <div className="flex w-full flex-row items-center justify-center gap-2 p-10 text-sm text-muted-foreground">
-            <BookDashed/>
+          <div className="text-muted-foreground flex w-full flex-row items-center justify-center gap-2 p-10 text-sm">
+            <BookDashed />
             No Recent Borrows Yet
           </div>
         ) : (

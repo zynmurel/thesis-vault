@@ -1,24 +1,34 @@
 "use client";
 import { api } from "@/trpc/react";
-import {
-  BookCheck,
-  BookText,
-  ChevronRight,
-  LoaderCircle,
-} from "lucide-react";
+import { BookCheck, BookText, ChevronRight, LoaderCircle } from "lucide-react";
 import { useParams } from "next/navigation";
-import React from "react";
+import React, { useState } from "react";
 import PendingBorrows from "./_components/pending-borrows";
 import RecentActivity from "./_components/recent-activity";
+import ThesiPage from "../theses/[thesisId]/_components/thesisPage";
 
 function Page() {
   const { studentId } = useParams();
+  const [viewThesis, setViewThesis] = useState<string | null>(null);
   const { data } = api.mobile.student.getStudentInfo.useQuery({
     studentId: String(studentId),
   });
   const { data: borrows } = api.mobile.student.getStudentBorrows.useQuery({
     studentId: String(studentId),
   });
+
+  if (viewThesis) {
+    return (
+      <div className=" w-full max-h-[100vh]">
+        <div className="absolute top-0 right-0 bottom-0 left-0 z-50 bg-white">
+          <ThesiPage
+            thesisId={viewThesis}
+            onClose={() => setViewThesis(null)}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex h-screen max-h-screen w-full flex-col overflow-y-auto bg-slate-100 pb-5">
@@ -32,8 +42,7 @@ function Page() {
               />
             </div>
           </div>
-          <div>
-          </div>
+          <div></div>
         </div>
         <div className="flex flex-col">
           <p className="flex flex-row items-center text-xl font-semibold">
@@ -94,8 +103,8 @@ function Page() {
             <ChevronRight />
           </div>
         </div>
-        <PendingBorrows/>
-        <RecentActivity/>
+        <PendingBorrows setViewThesis={setViewThesis} />
+        <RecentActivity setViewThesis={setViewThesis} />
       </div>
     </div>
   );

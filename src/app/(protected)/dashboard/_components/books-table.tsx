@@ -24,7 +24,8 @@ import { format } from "date-fns";
 function ThesesBooksTable() {
   const { data, isLoading } = api.dashboard.getDashboardBooks.useQuery();
   return (
-    <Card className="from-secondary/10 to-secondary/0 @container/card bg-gradient-to-t">
+    <Card className="rounded-xl border border-gray-100 bg-white p-2 py-8 shadow-sm transition-shadow duration-200 hover:shadow-md">
+      {" "}
       <CardHeader>
         <CardTitle className="flex flex-row items-center gap-1 font-semibold tabular-nums">
           <BookUp2 className="size-5" />

@@ -59,7 +59,7 @@ function Page() {
           >
             <SlidersHorizontal className="size-3.5" />
           </Button>
-          <StudentBag/>
+          <StudentBag />
         </div>
         {
           <div
@@ -244,14 +244,21 @@ const Thesis = ({
     });
   };
   const onClose = () => setShowView(null);
+  if (_v) {
+    return (
+      <div className="max-h-[100vh] w-full">
+        <div className="absolute top-0 right-0 bottom-0 left-0 z-50 bg-white">
+          <ThesiPage thesisId={_v} onClose={onClose} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       key={index}
       className="bg-background flex flex-col gap-1 rounded-xl border p-2 shadow"
     >
-      {_v && <div className="absolute top-0 right-0 bottom-0 left-0 bg-white z-50">
-        <ThesiPage thesisId={_v} onClose={onClose} />
-      </div>}
       <div className="flex flex-row items-center gap-2">
         <Image
           width={50}

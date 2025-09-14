@@ -11,21 +11,13 @@ export const dashboardRouter = createTRPCRouter({
       ctx.db.studentBorrow.count({
         where: { status: "BORROWED", borrowDueAt: { lt: new Date() } },
       }),
-      ctx.db.studentBorrow
-        .findMany({
-          distinct: ["studentId"],
-          where: {
-            isPenalty: true,
-            penaltyIsPaid: false,
-          },
-        })
-        .then((data) => data.length),
+      ctx.db.students.count(),
     ]);
     return {
       booksCount: data[0],
       borrowedCount: data[1],
       overDueCount: data[2],
-      studentWithPenaltyCount: data[3],
+      studentCount: data[3],
     };
   }),
   getDashboardBooks: protectedProcedure.query(async ({ ctx }) => {

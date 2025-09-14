@@ -4,12 +4,15 @@ import { api } from "@/trpc/react";
 import { format } from "date-fns";
 import { CircleDashed } from "lucide-react";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import React from "react";
 
-function PendingBorrows() {
+function PendingBorrows({
+  setViewThesis,
+}: {
+  setViewThesis: React.Dispatch<React.SetStateAction<string | null>>;
+}) {
   const { studentId } = useParams();
-  const router = useRouter();
   const { data } = api.mobile.student.getStudentPendingBorrows.useQuery(
     {
       studentId: String(studentId),
@@ -19,7 +22,7 @@ function PendingBorrows() {
   if (!data?.length) return <></>;
 
   const onView = (thesisId: string) => {
-    router.push(`theses/${thesisId}`);
+    setViewThesis(thesisId);
   };
   return (
     <div className="mt-2 flex flex-col">
