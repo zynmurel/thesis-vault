@@ -199,19 +199,32 @@ export const thesesRouter = createTRPCRouter({
       const settings = await ctx.db.admin.findFirst({
         include: { BorrowDueDateSettings: true },
       });
-      return await ctx.db.studentBorrow.update({
-        where: {
-          id: thesisBorrowId,
-        },
-        data: {
-          status: "BORROWED",
-          borrowedAt: new Date(),
-          borrowDueAt: addDays(
-            new Date(),
-            settings?.BorrowDueDateSettings?.dayCount || 3,
-          ),
-        },
+      const data = await ctx.db.$transaction(async (tx) => {
+        const borrow = await tx.studentBorrow.update({
+          where: {
+            id: thesisBorrowId,
+          },
+          data: {
+            status: "BORROWED",
+            borrowedAt: new Date(),
+            borrowDueAt: addDays(
+              new Date(),
+              settings?.BorrowDueDateSettings?.dayCount || 3,
+            ),
+          },
+        });
+        //NOTIFICATION
+        await tx.studentBorrowNotification.create({
+          data: {
+            thesisId: borrow.thesisId,
+            studentId: borrow.studentId,
+            borrowId: borrow.id,
+            type: "BORROW",
+          },
+        });
+        return borrow;
       });
+      return data;
     }),
   declineThesisBorrow: protectedProcedure
     .input(
@@ -238,6 +251,15 @@ export const thesesRouter = createTRPCRouter({
           },
           data: {
             available: borrow.Thesis.available + 1,
+          },
+        });
+        //NOTIFICATION
+        await tx.studentBorrowNotification.create({
+          data: {
+            thesisId: borrow.thesisId,
+            studentId: borrow.studentId,
+            borrowId: borrow.id,
+            type: "DECLINED",
           },
         });
         return await tx.studentBorrow.update({
@@ -279,6 +301,17 @@ export const thesesRouter = createTRPCRouter({
             available: borrow.Thesis.available + 1,
           },
         });
+
+        //NOTIFICATION
+        await tx.studentBorrowNotification.create({
+          data: {
+            thesisId: borrow.thesisId,
+            studentId: borrow.studentId,
+            borrowId: borrow.id,
+            type: isPenalty ? "RETURN_WITH_PENALTY" : "RETURN",
+          },
+        });
+
         return await tx.studentBorrow.update({
           where: {
             id: thesisBorrowId,

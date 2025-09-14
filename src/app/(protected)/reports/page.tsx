@@ -12,7 +12,7 @@ function Page() {
           <IconReport className="size-10" />
           <div className="flex flex-col">
             <h2 className="text-lg font-bold">Reports</h2>
-            <p className="-mt-1 text-sm">Thesis vault overall report.</p>
+            {/* <p className="-mt-1 text-sm">Thesis vault overall report.</p> */}
           </div>
         </div>
       </div>

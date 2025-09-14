@@ -23,7 +23,34 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { parseAsString, parseAsStringEnum, useQueryState } from "nuqs";
+const getOverdueDetail = (
+  dueDate: Date | string,
+  returnDate: Date | string,
+) => {
+  const due = new Date(dueDate).getTime();
+  const ret = new Date(returnDate).getTime();
 
+  if (ret <= due) return "On time";
+
+  let diff = Math.floor((ret - due) / 1000); // difference in seconds
+
+  const days = Math.floor(diff / (60 * 60 * 24));
+  diff %= 60 * 60 * 24;
+
+  const hours = Math.floor(diff / (60 * 60));
+  diff %= 60 * 60;
+
+  const minutes = Math.floor(diff / 60);
+  const seconds = diff % 60;
+
+  const parts = [];
+  if (days) parts.push(`${days} day${days > 1 ? "s" : ""}`);
+  if (hours) parts.push(`${hours} hr${hours > 1 ? "s" : ""}`);
+  if (minutes) parts.push(`${minutes} min${minutes > 1 ? "s" : ""}`);
+  if (seconds) parts.push(`${seconds} sec${seconds > 1 ? "s" : ""}`);
+
+  return parts.join(" ") + " overdue";
+};
 export default function PenaltiesTable() {
   const getDaysOverdue = (dueDate: Date, returnDate: Date) => {
     // Positive if returnDate is after dueDate
@@ -223,14 +250,13 @@ export default function PenaltiesTable() {
                             {new Date(borrow.borrowDueAt).toLocaleDateString()}
                           </div>
                           <div
-                            className={`${getDueSeverity(borrow.borrowDueAt, borrow.returnedAt!).severityClass} mt-1 flex items-center`}
+                            className={`${getDueSeverity(borrow.borrowDueAt, borrow.returnedAt!).severityClass} mt-1 flex text-xs items-center`}
                           >
                             <Clock className="mr-1 h-3 w-3" />
-                            {getDaysOverdue(
+                            {getOverdueDetail(
                               borrow.borrowDueAt,
                               borrow.returnedAt!,
-                            )}{" "}
-                            days overdue
+                            )}
                           </div>
                         </div>
                       ) : (
