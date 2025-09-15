@@ -1,8 +1,8 @@
-import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { z } from "zod";
 
 export const mobileNotificationRouter = createTRPCRouter({
-  getAllNotifications: protectedProcedure
+  getAllNotifications: publicProcedure
     .input(
       z.object({
         studentId: z.string(),
@@ -20,11 +20,11 @@ export const mobileNotificationRouter = createTRPCRouter({
         take: input.take,
         include: {
           Thesis: true,
-          StudentBorrow : true
+          StudentBorrow: true,
         },
       });
     }),
-  markAsRead: protectedProcedure
+  markAsRead: publicProcedure
     .input(
       z.object({
         id: z.string(),
