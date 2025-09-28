@@ -1,4 +1,5 @@
-import { IconBooks, IconBookUpload, IconLayoutDashboard, IconReport, IconSettings, IconUsers } from "@tabler/icons-react";
+import { IconBooks, IconBookUpload, IconLayoutDashboard, IconReport, IconSettings, IconUsers, IconClockShield } from "@tabler/icons-react";
+
 
 export const menu = [
     {
@@ -24,6 +25,12 @@ export const menu = [
       key : "students",
       url: "/students",
       icon: IconUsers,
+    },
+    {
+      title: "Penalties",
+      key : "penalties",
+      url: "/penalties",
+      icon: IconClockShield,
     },
     {
       title: "Reports",

@@ -146,6 +146,26 @@ export const mobileStudentRouter = createTRPCRouter({
         .catch((e) => console.log(e));
     }),
 
+  removeThesisToBag: publicProcedure
+    .input(
+      z.object({
+        studentId: z.string(),
+        thesisId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input: { thesisId, studentId } }) => {
+      return await ctx.db.studentBag
+        .delete({
+          where: {
+            studentId_thesisId: {
+              thesisId: thesisId,
+              studentId: studentId,
+            },
+          },
+        })
+        .catch((e) => console.log(e));
+    }),
+
   borrowThesis: publicProcedure
     .input(
       z.object({
@@ -155,12 +175,21 @@ export const mobileStudentRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input: { thesisId, studentId } }) => {
       const thesis = await ctx.db.theses.findUnique({
-          where: { id: thesisId, },
-        })
+        where: { id: thesisId },
+      });
+
+      const isPenalty = await ctx.db.studentBorrow.findFirst({
+        where: { studentId, isPenalty: true, penaltyIsPaid: false },
+      });
+
+      if (isPenalty)
+        throw new Error(
+          "You can't borrow right now. You still have penalty to settle.",
+        );
 
       if (!thesis) throw new Error("No thesis found.");
 
-      const isBorrowed = thesis.available <= 0
+      const isBorrowed = thesis.available <= 0;
 
       if (isBorrowed) throw new Error("This thesis is already borrowed.");
 
@@ -183,11 +212,11 @@ export const mobileStudentRouter = createTRPCRouter({
 
       return await ctx.db.$transaction(async (tx) => {
         await tx.theses.update({
-          where : { id : thesisId },
-          data : {
-            available : thesis.available - 1
-          }
-        })
+          where: { id: thesisId },
+          data: {
+            available: thesis.available - 1,
+          },
+        });
         return await tx.studentBorrow.create({
           data: {
             thesisId,
@@ -210,6 +239,71 @@ export const mobileStudentRouter = createTRPCRouter({
           thesisId_studentId: {
             thesisId,
             studentId,
+          },
+        },
+      });
+    }),
+
+  getIfPenalty: publicProcedure
+    .input(
+      z.object({
+        studentId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input: { studentId } }) => {
+      const isPenalty = await ctx.db.studentBorrow.findFirst({
+        where: { studentId, isPenalty: true, penaltyIsPaid: false },
+      });
+      return !!isPenalty;
+    }),
+
+  getActiveBorrows: publicProcedure
+    .input(
+      z.object({
+        studentId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input: { studentId } }) => {
+      const data = await ctx.db.studentBorrow.findMany({
+        where: {
+          studentId,
+          status: "BORROWED",
+        },
+        include: {
+          Thesis: {
+            include: {
+              Tags: {
+                include: {
+                  Tag: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      console.log(data);
+      return data;
+    }),
+  getBorrowHistory: publicProcedure
+    .input(
+      z.object({
+        studentId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input: { studentId } }) => {
+      return await ctx.db.studentBorrow.findMany({
+        where: {
+          studentId,
+        },
+        include: {
+          Thesis: {
+            include: {
+              Tags: {
+                include: {
+                  Tag: true,
+                },
+              },
+            },
           },
         },
       });

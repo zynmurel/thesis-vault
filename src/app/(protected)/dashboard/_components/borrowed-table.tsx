@@ -24,7 +24,7 @@ import { format } from "date-fns";
 function BorrowedBooksTable() {
   const { data, isLoading } = api.dashboard.getDashboardBorrows.useQuery();
   return (
-    <Card className="rounded-xl border border-gray-100 bg-white p-2 py-8 shadow-sm transition-shadow duration-200 hover:shadow-md">
+    <Card className="rounded-xl border w-full border-gray-100 bg-white p-2 py-8 shadow-sm transition-shadow duration-200 hover:shadow-md">
       <CardHeader>
         <CardTitle className="flex flex-row items-center gap-1 font-semibold tabular-nums">
           <BookUp2 className="size-5" />
@@ -55,7 +55,7 @@ function BorrowedBooksTable() {
             {data?.map((borrow, i) => (
               <TableRow key={i}>
                 <TableCell>{formatName(borrow.Student)}</TableCell>
-                <TableCell>{borrow.Thesis.title}</TableCell>
+                <TableCell className=" max-w-60"><p className=" text-wrap">{borrow.Thesis.title}</p></TableCell>
                 <TableCell>
                   {format(borrow.updatedAt, "MM/dd/yyyy, hh:mm:aa")}
                 </TableCell>

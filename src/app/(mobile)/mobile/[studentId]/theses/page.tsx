@@ -12,7 +12,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
   parseAsArrayOf,
   parseAsBoolean,
@@ -25,8 +25,10 @@ import React, { useState } from "react";
 import type { Tags, Theses, ThesesTags } from "@prisma/client";
 import ThesiPage from "./[thesisId]/_components/thesisPage";
 import StudentBag from "../_components/studentBag";
+import Bag from "./_components/bag";
 
 function Page() {
+  const [show] = useQueryState("show-bag", parseAsBoolean.withDefault(false));
   const [filters, setFilters] = useQueryStates({
     title: parseAsString.withDefault(""),
     take: parseAsInteger.withDefault(100),
@@ -40,6 +42,11 @@ function Page() {
   );
 
   const { data, isLoading } = api.mobile.theses.getFilters.useQuery();
+
+  if (show) {
+    return <Bag />;
+  }
+
   return (
     <div className="relative flex h-screen max-h-screen w-full flex-col">
       <div
@@ -219,7 +226,6 @@ const Thesis = ({
   const [_v, setShowView] = useState<null | string>(null);
   const { studentId } = useParams();
   const utils = api.useUtils();
-  const router = useRouter();
 
   const { data: bag } = api.mobile.student.getBag.useQuery({
     studentId: String(studentId),
@@ -228,14 +234,12 @@ const Thesis = ({
   const { mutate, isPending } = api.mobile.student.putThesisInBag.useMutation({
     onSuccess: async () => {
       await utils.mobile.student.getBag.invalidate();
+      await utils.mobile.theses.getBagTheses.invalidate();
     },
   });
 
   const isAdded = !!bag?.find((b) => b.thesisId === thesis.id);
 
-  const onView = (thesisId: string) => {
-    router.push(`theses/${thesisId}`);
-  };
 
   const onAddToBag = (thesisId: string) => {
     mutate({
@@ -244,6 +248,7 @@ const Thesis = ({
     });
   };
   const onClose = () => setShowView(null);
+
   if (_v) {
     return (
       <div className="max-h-[100vh] w-full">

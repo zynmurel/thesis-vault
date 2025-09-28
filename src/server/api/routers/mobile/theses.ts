@@ -144,4 +144,127 @@ export const mobileThesesRouter = createTRPCRouter({
         },
       });
     }),
+
+  getBagTheses: publicProcedure
+    .input(
+      z.object({
+        studentId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const studentBag = await ctx.db.studentBag.findMany({
+        where: {
+          studentId: input.studentId,
+        },
+        include: {
+          Thesis: {
+            include: {
+              Tags: {
+                include: {
+                  Tag: true,
+                },
+              },
+              Course: true,
+              Ratings: true,
+            },
+          },
+        },
+      });
+
+      return studentBag.map((t) => {
+        return {
+          ...t.Thesis,
+          averageRating: t.Thesis.Ratings.length
+            ? t.Thesis.Ratings.reduce((a, c) => a + c.stars, 0) /
+              t.Thesis.Ratings.length
+            : 0,
+        };
+      });
+    }),
+  getStudentRating: publicProcedure
+    .input(
+      z.object({
+        studentId: z.string(),
+        thesisId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.thesesRatings.findUnique({
+        where: {
+          thesisId_studentId: {
+            thesisId: input.thesisId,
+            studentId: input.studentId,
+          },
+        },
+      });
+    }),
+  setStudentRating: publicProcedure
+    .input(
+      z.object({
+        studentId: z.string(),
+        thesisId: z.string(),
+        rating: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.thesesRatings.upsert({
+        where: {
+          thesisId_studentId: {
+            thesisId: input.thesisId,
+            studentId: input.studentId,
+          },
+        },
+        create: {
+          stars: input.rating,
+          thesisId: input.thesisId,
+          studentId: input.studentId,
+        },
+        update: {
+          stars: input.rating,
+        },
+      });
+    }),
+  getThesisComment: publicProcedure
+    .input(
+      z.object({
+        thesisId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.thesesComments.findMany({
+        where: {
+          thesisId: input.thesisId,
+        },
+        orderBy: {
+          updatedAt: "desc",
+        },
+        include: {
+          Student: true,
+        },
+      });
+    }),
+  createThesisComment: publicProcedure
+    .input(
+      z.object({
+        id: z.number().optional(),
+        comment: z.string(),
+        studentId: z.string(),
+        thesisId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.thesesComments.upsert({
+        where: {
+          id: input.id || 0,
+        },
+        create: {
+          comment: input.comment,
+          thesisId: input.thesisId,
+          studentId: input.studentId,
+        },
+        update: {
+          comment: input.comment,
+        },
+      });
+    }),
 });

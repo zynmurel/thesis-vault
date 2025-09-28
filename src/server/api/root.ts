@@ -11,6 +11,7 @@ import { dashboardRouter } from "./routers/dashboard";
 import { settingsRouter } from "./routers/settings";
 import { reportRouter } from "./routers/reports";
 import { mobileNotificationRouter } from "./routers/mobile/notification";
+import { notificationRouter } from "./routers/notification";
 
 /**
  * This is the primary router for your server.
@@ -27,6 +28,7 @@ export const appRouter = createTRPCRouter({
   dashboard: dashboardRouter,
   settings: settingsRouter,
   report: reportRouter,
+  notification : notificationRouter,
   mobile: {
     student: mobileStudentRouter,
     theses: mobileThesesRouter,

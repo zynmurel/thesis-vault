@@ -6,10 +6,17 @@ import React, { useState } from "react";
 import PendingBorrows from "./_components/pending-borrows";
 import RecentActivity from "./_components/recent-activity";
 import ThesiPage from "../theses/[thesisId]/_components/thesisPage";
+import { parseAsStringEnum, useQueryState } from "nuqs";
+import ActiveBorrows from "./_components/active-borrows";
+import BorrowHistory from "./_components/borrow-history";
 
 function Page() {
   const { studentId } = useParams();
   const [viewThesis, setViewThesis] = useState<string | null>(null);
+  const [showPage, setShowPage] = useQueryState(
+    "page-shown",
+    parseAsStringEnum(["active", "history"]),
+  );
   const { data } = api.mobile.student.getStudentInfo.useQuery({
     studentId: String(studentId),
   });
@@ -19,7 +26,7 @@ function Page() {
 
   if (viewThesis) {
     return (
-      <div className=" w-full max-h-[100vh]">
+      <div className="max-h-[100vh] w-full">
         <div className="absolute top-0 right-0 bottom-0 left-0 z-50 bg-white">
           <ThesiPage
             thesisId={viewThesis}
@@ -27,6 +34,18 @@ function Page() {
           />
         </div>
       </div>
+    );
+  }
+
+  if (showPage === "active") {
+    return (
+      <ActiveBorrows/>
+    );
+  }
+
+  if (showPage === "history") {
+    return (
+      <BorrowHistory/>
     );
   }
 
@@ -64,7 +83,7 @@ function Page() {
       </div>
       <div className="z-50 -mt-8 flex flex-col gap-2 px-2">
         <div className="grid grid-cols-2 gap-1">
-          <div className="flex flex-row items-center justify-between rounded bg-white p-4 py-2 shadow">
+          <div className="flex flex-row items-center justify-between rounded bg-white p-4 py-2 shadow" onClick={()=>setShowPage("active")}>
             <div className="flex flex-col">
               <p className="text-foreground/60 px-1 text-[10px]">
                 Active Borrows
@@ -83,7 +102,7 @@ function Page() {
             </div>
             <ChevronRight />
           </div>
-          <div className="flex flex-row items-center justify-between rounded bg-white p-4 py-2 shadow">
+          <div className="flex flex-row items-center justify-between rounded bg-white p-4 py-2 shadow" onClick={()=>setShowPage("history")}>
             <div className="flex flex-col">
               <p className="text-foreground/60 px-1 text-[10px]">
                 Borrow History

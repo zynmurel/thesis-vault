@@ -22,7 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { parseAsString, parseAsStringEnum, useQueryState } from "nuqs";
+import { parseAsInteger, parseAsString, parseAsStringEnum, useQueryState } from "nuqs";
+import OnSettleModal from "./settle-modal";
 const getOverdueDetail = (
   dueDate: Date | string,
   returnDate: Date | string,
@@ -59,8 +60,11 @@ export default function PenaltiesTable() {
   };
   const [status, setStatus] = useQueryState(
     "status",
-    parseAsStringEnum(["all", "setteled", "unsetteled"]).withDefault("all"),
+    parseAsStringEnum(["all", "settled", "unsettled"]).withDefault("all"),
   );
+
+  const [_, setId] = useQueryState("settle-penalty-id", parseAsInteger);
+
   const [search, setSearch] = useQueryState(
     "search",
     parseAsString.withDefault(""),
@@ -110,6 +114,7 @@ export default function PenaltiesTable() {
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+      <OnSettleModal />
       <div className="border-b border-gray-100 px-6 py-4">
         <div className="flex items-center justify-between">
           <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
@@ -120,13 +125,13 @@ export default function PenaltiesTable() {
             <div className="flex items-center">
               <div className="mr-2 h-3 w-3 rounded-full bg-red-500"></div>
               <span className="text-gray-600">
-                Unsettled: {counts?.unsetteled || 0}
+                Unsettled: {counts?.unsettled || 0}
               </span>
             </div>
             <div className="flex items-center">
               <div className="mr-2 h-3 w-3 rounded-full bg-green-500"></div>
               <span className="text-gray-600">
-                Setteled: {counts?.setteled || 0}
+                Settled: {counts?.settled || 0}
               </span>
             </div>
           </div>
@@ -151,11 +156,11 @@ export default function PenaltiesTable() {
                   <SelectGroup>
                     <div>
                       <SelectItem value={"all"}>All Status</SelectItem>
-                      <SelectItem value={"setteled"} key={"setteled"}>
-                        Setteled
+                      <SelectItem value={"settled"} key={"settled"}>
+                        Settled
                       </SelectItem>
-                      <SelectItem value={"unsetteled"} key={"unsetteled"}>
-                        Unsetteled
+                      <SelectItem value={"unsettled"} key={"unsettled"}>
+                        Unsettled
                       </SelectItem>
                     </div>
                   </SelectGroup>
@@ -250,7 +255,7 @@ export default function PenaltiesTable() {
                             {new Date(borrow.borrowDueAt).toLocaleDateString()}
                           </div>
                           <div
-                            className={`${getDueSeverity(borrow.borrowDueAt, borrow.returnedAt!).severityClass} mt-1 flex text-xs items-center`}
+                            className={`${getDueSeverity(borrow.borrowDueAt, borrow.returnedAt!).severityClass} mt-1 flex items-center text-xs`}
                           >
                             <Clock className="mr-1 h-3 w-3" />
                             {getOverdueDetail(
@@ -275,8 +280,11 @@ export default function PenaltiesTable() {
                       <div className="flex space-x-2">
                         {!borrow.penaltyIsPaid ? (
                           <>
-                            <button className="border-primary-300 bg-primary-50 text-primary-700 hover:bg-primary-100 focus:ring-primary-500 inline-flex cursor-pointer items-center rounded-md border px-3 py-1 text-xs font-medium transition-colors duration-200 focus:ring-2 focus:outline-none">
-                              Mark Setteled
+                            <button
+                              onClick={() => setId(borrow.id)}
+                              className="border-primary-300 bg-primary-50 text-primary-700 hover:bg-primary-100 focus:ring-primary-500 inline-flex cursor-pointer items-center rounded-md border px-3 py-1 text-xs font-medium transition-colors duration-200 focus:ring-2 focus:outline-none"
+                            >
+                              Mark Settled
                             </button>
                           </>
                         ) : (

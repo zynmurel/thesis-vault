@@ -11,14 +11,16 @@ export function RatingRoundedStar({
   onChange,
   value,
   readOnly,
+  maxWidth
 }: {
   onChange?: RatingChange | undefined;
   value: number;
   readOnly?: boolean;
+  maxWidth? : number
 }) {
   return (
     <Rating
-      style={{ maxWidth: 100 }}
+      style={{ maxWidth: maxWidth || 100 }}
       value={value}
       onChange={onChange}
       itemStyles={myStyles}

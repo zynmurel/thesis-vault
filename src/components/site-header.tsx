@@ -1,5 +1,6 @@
 'use client'
 import { ModeToggle } from "@/app/(protected)/_components/mode-toggle"
+import { NotificationToggle } from "@/app/(protected)/_components/notification-toggle"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { menu } from "@/lib/const/sidebar-menu"
@@ -24,6 +25,7 @@ export function SiteHeader() {
 
       <div className=" px-4 lg:px-5">
         <ModeToggle />
+        <NotificationToggle/>
       </div>
     </header>
   )

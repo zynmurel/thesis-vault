@@ -87,7 +87,7 @@ export default function UploadStudentsModal() {
         }
 
         const json = XLSX.utils.sheet_to_json(sheet as XLSX.WorkSheet) as {
-          'Year Level': number;
+          "Year Level": number;
           Section: string;
           "Student No.": string;
           "First Name": string;
@@ -100,16 +100,14 @@ export default function UploadStudentsModal() {
 
         const students = json.map((data) => ({
           year: Number(data["Year Level"]),
-          section: data["Section"],
+          section: data["Section"] || "",
           studentId: data["Student No."],
           firstName: data["First Name"],
           middleName: data["Middle Name"],
           lastName: data["Last Name"],
           email: data["Email"],
           contactNo: data["Contact Number"],
-          gender: data["Sex"]?.toLowerCase()?.includes("f")
-            ? "FEMALE"
-            : "MALE",
+          gender: data["Sex"]?.toLowerCase()?.includes("f") ? "FEMALE" : "MALE",
         })) as Students[];
 
         setExcelData(students);
@@ -138,6 +136,7 @@ export default function UploadStudentsModal() {
   const onClose = () => setModal(null);
 
   const onAddStudents = () => {
+    console.log(excelData)
     excelData.length &&
       courseCode &&
       mutate({
@@ -149,6 +148,9 @@ export default function UploadStudentsModal() {
           lastName: stud.lastName,
           email: stud.email || undefined,
           gender: stud.gender,
+          contactNumber: stud.contactNo || undefined,
+          year: stud.year,
+          section: stud.section,
         })),
       });
   };
@@ -185,18 +187,23 @@ export default function UploadStudentsModal() {
                 <Table className="relative max-w-full text-xs">
                   <TableHeader className="top-0">
                     <TableRow>
-                      <TableHead>Student No.</TableHead>
-                      <TableHead>First Name</TableHead>
-                      <TableHead>Middle Name</TableHead>
-                      <TableHead>Last Name</TableHead>
-                      <TableHead>Gender</TableHead>
-                      <TableHead>Email</TableHead>
+                            <TableHead>Year Level</TableHead>
+                            <TableHead>Section</TableHead>
+                            <TableHead>Student No.</TableHead>
+                            <TableHead>First Name</TableHead>
+                            <TableHead>Middle Name</TableHead>
+                            <TableHead>Last Name</TableHead>
+                            <TableHead>Sex</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Contact Number</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {excelData.map((student) => {
                       return (
                         <TableRow key={student.id}>
+                          <TableCell>{student.year}</TableCell>
+                          <TableCell>{student.section}</TableCell>
                           <TableCell>{student.studentId}</TableCell>
                           <TableCell>{student.firstName}</TableCell>
                           <TableCell>{student.middleName}</TableCell>
@@ -246,13 +253,13 @@ export default function UploadStudentsModal() {
                       <Table className="text-xs">
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Level</TableHead>
+                            <TableHead>Year Level</TableHead>
                             <TableHead>Section</TableHead>
                             <TableHead>Student No.</TableHead>
                             <TableHead>First Name</TableHead>
                             <TableHead>Middle Name</TableHead>
                             <TableHead>Last Name</TableHead>
-                            <TableHead>Gender</TableHead>
+                            <TableHead>Sex</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Contact Number</TableHead>
                           </TableRow>

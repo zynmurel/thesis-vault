@@ -56,7 +56,7 @@ function ThesesBooksTable() {
           <TableBody>
             {data?.map((thesis, i) => (
               <TableRow key={i}>
-                <TableCell>
+                <TableCell className="max-w-40">
                   <p className="text-wrap">{thesis.title}</p>
                 </TableCell>
                 <TableCell>{thesis.courseCode}</TableCell>

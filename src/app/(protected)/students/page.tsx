@@ -135,6 +135,8 @@ function Page() {
           <TableHeader>
             <TableRow>
               <TableHead>Student ID</TableHead>
+              <TableHead>Year</TableHead>
+              <TableHead>Section</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Program</TableHead>
@@ -146,6 +148,8 @@ function Page() {
               return (
                 <TableRow key={student.id}>
                   <TableCell>{student.studentId}</TableCell>
+                  <TableCell>{student.year}</TableCell>
+                  <TableCell>{student.section}</TableCell>
                   <TableCell>{`${student.firstName} ${student.middleName ? `${student.middleName} ` : " "}${student.lastName}`}</TableCell>
                   <TableCell>{student.email}</TableCell>
                   <TableCell>{student.courseCode}</TableCell>
