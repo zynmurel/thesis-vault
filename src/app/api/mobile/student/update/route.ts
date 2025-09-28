@@ -46,17 +46,31 @@ export async function POST(req: NextRequest) {
     const user = await db.students.findUnique({
       where: { id: studentId },
     });
-    if (!user)
-      return NextResponse.json({ message: "user_not_found" }, { status: 401 });
-
+    if (!user) {
+      return NextResponse.json(
+        {
+          message: "user_not_found",
+          error: "Invalid credentials",
+          status: 401,
+        },
+        { status: 200 },
+      );
+    }
     const passwordMatch = await bcrypt.compare(
       password as string,
       user.password,
     );
 
-    if (!passwordMatch)
-      return NextResponse.json({ message: "wrong_password" }, { status: 401 });
-    
+    if (!passwordMatch) {
+      return NextResponse.json(
+        {
+          message: "wrong_password",
+          error: "Invalid credentials",
+          status: 401,
+        },
+        { status: 200 },
+      );
+    }
     passwordData = { password: hashedPassword };
   }
 
