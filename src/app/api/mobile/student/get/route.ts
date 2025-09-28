@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const student = await db.students.findUnique({
-      where: { studentId },
+      where: { id : studentId },
     });
     const response = NextResponse.json({ student }, { status: 200 });
     return response;
