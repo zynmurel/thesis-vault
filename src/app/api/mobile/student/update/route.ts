@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
+import { hashPassword } from "@/utils/hash";
 
 // Helper to add CORS headers
 function withCORS(response: NextResponse) {
@@ -21,7 +22,7 @@ export async function OPTIONS() {
 }
 
 export async function POST(req: NextRequest) {
-  const { studentId, ...rest } = await req.json().then((data) => {
+  const { studentId, password, ...rest } = await req.json().then((data) => {
     return { ...data } as {
       studentId: string;
       courseCode?: string;
@@ -33,15 +34,23 @@ export async function POST(req: NextRequest) {
       section?: string;
       contactNo?: string;
       gender?: "MALE" | "FEMALE";
+      password?: string;
     };
   });
-  console.log("student id", studentId);
-  console.log("rest", rest);
+
+  let passwordData = {};
+
+  if (password) {
+    const hashedPassword = await hashPassword(password);
+    passwordData = { password: hashedPassword };
+  }
+
   try {
     const student = await db.students.update({
       where: { id: studentId },
       data: {
         ...rest,
+        ...passwordData
       },
     });
     const response = NextResponse.json({ student }, { status: 200 });
