@@ -87,7 +87,7 @@ export default function PenaltiesTable() {
   const getPenaltyStatus = (isPenalty: boolean, penaltyIsPaid: boolean) => {
     if (isPenalty && !penaltyIsPaid) {
       return {
-        status: "UNSETTELED",
+        status: "UNSETTLED",
         color: "bg-red-100 text-red-800",
         icon: <XCircle className="h-4 w-4" />,
       };

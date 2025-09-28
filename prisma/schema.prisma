@@ -71,6 +71,7 @@ model Students {
     id         String        @id @default(uuid())
     courseCode String
     studentId  String        @unique
+    profileUrl String?
     email      String?
     password   String
     firstName  String
