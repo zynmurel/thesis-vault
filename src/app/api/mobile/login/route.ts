@@ -24,6 +24,8 @@ export async function POST(req: NextRequest) {
     }
     console.log("sean", studentId, password)
 
+    console.log(db.students.findFirst())
+
     try {
         const user = await db.students.findUnique({
             where: { studentId },
