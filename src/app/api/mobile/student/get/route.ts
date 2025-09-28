@@ -1,4 +1,3 @@
-
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
 
@@ -23,8 +22,10 @@ export async function OPTIONS() {
 
 export async function POST(req: NextRequest) {
   const { studentId } = await req.json().then((data) => {
+    console.log(data);
     return { ...data } as { studentId: string };
   });
+  console.log(studentId);
 
   try {
     const student = await db.students.findUnique({
