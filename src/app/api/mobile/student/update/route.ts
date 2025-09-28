@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
 import { hashPassword } from "@/utils/hash";
+import bcrypt from "bcryptjs";
 
 // Helper to add CORS headers
 function withCORS(response: NextResponse) {
@@ -42,6 +43,20 @@ export async function POST(req: NextRequest) {
 
   if (password) {
     const hashedPassword = await hashPassword(password);
+    const user = await db.students.findUnique({
+      where: { id: studentId },
+    });
+    if (!user)
+      return NextResponse.json({ message: "user_not_found" }, { status: 401 });
+
+    const passwordMatch = await bcrypt.compare(
+      password as string,
+      user.password,
+    );
+
+    if (!passwordMatch)
+      return NextResponse.json({ message: "wrong_password" }, { status: 401 });
+    
     passwordData = { password: hashedPassword };
   }
 
@@ -50,7 +65,7 @@ export async function POST(req: NextRequest) {
       where: { id: studentId },
       data: {
         ...rest,
-        ...passwordData
+        ...passwordData,
       },
     });
     const response = NextResponse.json({ student }, { status: 200 });
