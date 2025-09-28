@@ -35,10 +35,11 @@ export async function POST(req: NextRequest) {
       gender?: "MALE" | "FEMALE";
     };
   });
-
+  console.log("student id", studentId);
+  console.log("rest", rest);
   try {
     const student = await db.students.update({
-      where: { id : studentId },
+      where: { id: studentId },
       data: {
         ...rest,
       },
