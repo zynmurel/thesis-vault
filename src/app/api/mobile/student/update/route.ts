@@ -23,7 +23,7 @@ export async function OPTIONS() {
 }
 
 export async function POST(req: NextRequest) {
-  const { studentId, password, ...rest } = await req.json().then((data) => {
+  const { studentId, password,currentPassword, ...rest } = await req.json().then((data) => {
     return { ...data } as {
       studentId: string;
       courseCode?: string;
@@ -36,12 +36,13 @@ export async function POST(req: NextRequest) {
       contactNo?: string;
       gender?: "MALE" | "FEMALE";
       password?: string;
+      currentPassword?:string
     };
   });
 
   let passwordData = {};
 
-  if (password) {
+  if (password && currentPassword) {
     const hashedPassword = await hashPassword(password);
     const user = await db.students.findUnique({
       where: { id: studentId },
@@ -57,7 +58,7 @@ export async function POST(req: NextRequest) {
       );
     }
     const passwordMatch = await bcrypt.compare(
-      password as string,
+      currentPassword as string,
       user.password,
     );
 
