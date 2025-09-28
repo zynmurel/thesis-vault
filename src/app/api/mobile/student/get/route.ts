@@ -1,3 +1,4 @@
+
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
 
@@ -21,27 +22,13 @@ export async function OPTIONS() {
 }
 
 export async function POST(req: NextRequest) {
-  const { studentId, ...rest } = await req.json().then((data) => {
-    return { ...data } as {
-      studentId: string;
-      courseCode?: string;
-      email?: string;
-      firstName?: string;
-      middleName?: string;
-      lastName?: string;
-      year?: number;
-      section?: string;
-      contactNo?: string;
-      gender?: "MALE" | "FEMALE";
-    };
+  const { studentId } = await req.json().then((data) => {
+    return { ...data } as { studentId: string };
   });
 
   try {
-    const student = await db.students.update({
+    const student = await db.students.findUnique({
       where: { studentId },
-      data: {
-        ...rest,
-      },
     });
     const response = NextResponse.json({ student }, { status: 200 });
     return response;
