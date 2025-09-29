@@ -43,7 +43,6 @@ export async function POST(req: NextRequest) {
   let passwordData = {};
 
   if (password && currentPassword) {
-    const hashedPassword = await hashPassword(password);
     const user = await db.students.findUnique({
       where: { id: studentId },
     });
@@ -72,6 +71,8 @@ export async function POST(req: NextRequest) {
         { status: 200 },
       );
     }
+
+    const hashedPassword = await hashPassword(password);
     passwordData = { password: hashedPassword };
   }
 

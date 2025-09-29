@@ -101,7 +101,7 @@ export default function UploadStudentsModal() {
         const students = json.map((data) => ({
           year: Number(data["Year Level"]),
           section: data["Section"] || "",
-          studentId: data["Student No."],
+          studentId: data["Student No."].trim(),
           firstName: data["First Name"],
           middleName: data["Middle Name"],
           lastName: data["Last Name"],
