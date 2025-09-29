@@ -12,6 +12,7 @@ import { settingsRouter } from "./routers/settings";
 import { reportRouter } from "./routers/reports";
 import { mobileNotificationRouter } from "./routers/mobile/notification";
 import { notificationRouter } from "./routers/notification";
+import { studentScriptRouter } from "./script/student";
 
 /**
  * This is the primary router for your server.
@@ -34,6 +35,9 @@ export const appRouter = createTRPCRouter({
     theses: mobileThesesRouter,
     notification: mobileNotificationRouter,
   },
+  script: {
+    students : studentScriptRouter
+  }
 });
 
 // export type definition of API

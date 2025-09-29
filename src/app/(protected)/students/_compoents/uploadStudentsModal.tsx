@@ -98,17 +98,21 @@ export default function UploadStudentsModal() {
           "Contact Number"?: string;
         }[];
 
-        const students = json.map((data) => ({
-          year: Number(data["Year Level"]),
-          section: data["Section"] || "",
-          studentId: data["Student No."].trim(),
-          firstName: data["First Name"],
-          middleName: data["Middle Name"],
-          lastName: data["Last Name"],
-          email: data["Email"],
-          contactNo: data["Contact Number"],
-          gender: data["Sex"]?.toLowerCase()?.includes("f") ? "FEMALE" : "MALE",
-        })) as Students[];
+        const students = json
+          .map((data) => ({
+            year: Number(data["Year Level"]),
+            section: data["Section"] || "",
+            studentId: (data["Student No."] || null)?.trim(),
+            firstName: data["First Name"],
+            middleName: data["Middle Name"],
+            lastName: data["Last Name"],
+            email: data["Email"],
+            contactNo: data["Contact Number"],
+            gender: data["Sex"]?.toLowerCase()?.includes("f")
+              ? "FEMALE"
+              : "MALE",
+          }))
+          .filter((d) => !!d.studentId) as Students[];
 
         setExcelData(students);
       } catch (err: any) {
@@ -136,7 +140,7 @@ export default function UploadStudentsModal() {
   const onClose = () => setModal(null);
 
   const onAddStudents = () => {
-    console.log(excelData)
+    console.log(excelData);
     excelData.length &&
       courseCode &&
       mutate({
@@ -187,15 +191,15 @@ export default function UploadStudentsModal() {
                 <Table className="relative max-w-full text-xs">
                   <TableHeader className="top-0">
                     <TableRow>
-                            <TableHead>Year Level</TableHead>
-                            <TableHead>Section</TableHead>
-                            <TableHead>Student No.</TableHead>
-                            <TableHead>First Name</TableHead>
-                            <TableHead>Middle Name</TableHead>
-                            <TableHead>Last Name</TableHead>
-                            <TableHead>Sex</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Contact Number</TableHead>
+                      <TableHead>Year Level</TableHead>
+                      <TableHead>Section</TableHead>
+                      <TableHead>Student No.</TableHead>
+                      <TableHead>First Name</TableHead>
+                      <TableHead>Middle Name</TableHead>
+                      <TableHead>Last Name</TableHead>
+                      <TableHead>Sex</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Contact Number</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
