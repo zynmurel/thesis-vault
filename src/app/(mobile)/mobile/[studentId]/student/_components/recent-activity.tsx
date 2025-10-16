@@ -53,7 +53,7 @@ function RecentActivity({
                       Request Date : {format(borrows.createdAt, "MM/dd/yyy")}
                     </p>
                     <Badge
-                      className={`text-[10px] text-white ${borrows.status === "RETURNED" ? "bg-blue-500" : borrows.status === "BORROWED" ? "bg-orange-400" : ""}`}
+                      className={`text-[10px]  ${borrows.status === "RETURNED" ? "bg-blue-500 text-white" : borrows.status === "BORROWED" ? "bg-orange-400 text-white" : " text-foreground"}`}
                       variant={"outline"}
                     >
                       {borrows.status}

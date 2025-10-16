@@ -75,13 +75,13 @@ export const reportRouter = createTRPCRouter({
               }
             : {};
 
-        if (!studentId) throw new Error("No student id");
+        const whereStudentId = studentId ? { studentId } : {};
 
         return await ctx.db.studentBorrow.findMany({
           where: {
             ...isPenaltyOnly,
             ...dateFilter,
-            studentId,
+            ...whereStudentId,
             status: { notIn: ["PENDING", "CANCELLED"] },
           },
           orderBy: {
@@ -118,13 +118,13 @@ export const reportRouter = createTRPCRouter({
             }
           : {};
 
-      if (!studentId) throw new Error("No student id");
+      const whereStudentId = studentId ? { studentId } : {};
 
       return await ctx.db.studentBorrow.count({
         where: {
           ...isPenaltyOnly,
           ...dateFilter,
-          studentId,
+          ...whereStudentId,
           status: { notIn: ["PENDING", "CANCELLED"] },
         },
       });
@@ -135,7 +135,7 @@ export const reportRouter = createTRPCRouter({
         type: z.enum(["ALL", "PENALTY"]),
         startDate: z.date().optional(),
         endDate: z.date().optional(),
-        studentId: z.string(),
+        studentId: z.string().nullable(),
       }),
     )
     .mutation(
@@ -152,11 +152,13 @@ export const reportRouter = createTRPCRouter({
               }
             : {};
 
+        const whereStudentId = studentId ? { studentId } : {};
+
         return await ctx.db.studentBorrow.findMany({
           where: {
             ...isPenaltyOnly,
             ...dateFilter,
-            studentId,
+            ...whereStudentId,
             status: { notIn: ["PENDING", "CANCELLED"] },
           },
           include: {

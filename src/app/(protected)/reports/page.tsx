@@ -76,78 +76,120 @@ function Page() {
   const [studentId, setStudentId] = useQueryState("student-id", parseAsString);
   const [search, setSearch] = useState("");
 
-  const { data, isLoading } = api.report.getReport.useQuery(
-    {
-      type,
-      startDate: date?.from,
-      endDate: date?.to,
-      studentId,
-      ...pagination,
-    },
-    { enabled: !!studentId },
-  );
-  const { data: count } = api.report.getReportCount.useQuery(
-    {
-      type,
-      startDate: date?.from,
-      endDate: date?.to,
-      studentId,
-    },
-    { enabled: !!studentId },
-  );
+  const { data, isLoading } = api.report.getReport.useQuery({
+    type,
+    startDate: date?.from,
+    endDate: date?.to,
+    studentId,
+    ...pagination,
+  });
+  const { data: count } = api.report.getReportCount.useQuery({
+    type,
+    startDate: date?.from,
+    endDate: date?.to,
+    studentId,
+  });
   const { data: students, isLoading: studentsIsLoading } =
     api.report.getStudents.useQuery({
       search,
     });
+
   const { mutate, isPending } = api.report.getReportPrint.useMutation({
     onSuccess: (data) => {
       if (!data[0]) {
         toast.error("No data found");
       } else {
-        const student = data[0].Student;
+        const student = studentId ? data[0].Student : null;
 
         const wsData: any[][] = [];
         // Add student info rows
-        wsData.push([`User Report: ${formatName(student)}`]);
-        wsData.push([`Student ID: ${student.id}`]);
-        wsData.push([
-          `Course/Year: ${student.courseCode} - ${student.year}${student.section}`,
-        ]);
+        if (student) {
+          wsData.push([`Student Borrow Report`]);
+          wsData.push([`Student: ${formatName(student)}`]);
+          wsData.push([`ID: ${student.id}`]);
+          wsData.push([
+            `Course/Year: ${student.courseCode} - ${student.year}${student.section}`,
+          ]);
+          wsData.push([
+            `Course/Year: ${student.courseCode} - ${student.year}${student.section}`,
+          ]);
+          wsData.push([`Date : ${format(new Date(), "PPP")}`]);
+        } else {
+          wsData.push([`Student Borrow Report`]);
+          wsData.push([`Date : ${format(new Date(), "PPP")}`]);
+        }
         wsData.push([]); // blank row
 
         // Add table headers
-        wsData.push([
-          "Manuscript Title",
-          "Date Borrowed",
-          "Due Date",
-          "Date Returned",
-          "Status",
-          type === "PENALTY" ? "Penalty Status" : undefined,
-        ]);
+        if (student) {
+          wsData.push([
+            "Manuscript Title",
+            "Date Borrowed",
+            "Due Date",
+            "Date Returned",
+            "Status",
+            type === "PENALTY" ? "Penalty Status" : undefined,
+          ]);
+        } else {
+          wsData.push([
+            "Manuscript Title",
+            "Borrower",
+            "Date Borrowed",
+            "Due Date",
+            "Date Returned",
+            "Status",
+            type === "PENALTY" ? "Penalty Status" : undefined,
+          ]);
+        }
 
         // Add table data
         data.forEach((row) => {
-          wsData.push([
-            row.Thesis.title,
-            row.borrowedAt ? format(row.borrowedAt, "PP") : "",
-            row.borrowDueAt ? format(row.borrowDueAt, "PP") : "",
-            row.returnedAt ? format(row.returnedAt, "PP") : "",
-            (() => {
-              if (!row.returnedAt) {
-                return "Book not returned yet";
-              }
-              if (!row.borrowDueAt) return "";
-              if (row.returnedAt <= row.borrowDueAt) {
-                return "Returned on time";
-              }
-              return "Returned late";
-            })(),
-            type === "PENALTY"
-              ? row.penaltyIsPaid
-                ? "Settled"
-                : "Unsettled"
-              : undefined,
-          ]);
+          if (student) {
+            wsData.push([
+              row.Thesis.title,
+              row.borrowedAt ? format(row.borrowedAt, "PP") : "",
+              row.borrowDueAt ? format(row.borrowDueAt, "PP") : "",
+              row.returnedAt ? format(row.returnedAt, "PP") : "",
+              (() => {
+                if (!row.returnedAt) {
+                  return "Book not returned yet";
+                }
+                if (!row.borrowDueAt) return "";
+                if (row.returnedAt <= row.borrowDueAt) {
+                  return "Returned on time";
+                }
+                return "Returned late";
+              })(),
+              type === "PENALTY"
+                ? row.penaltyIsPaid
+                  ? "Settled"
+                  : "Unsettled"
+                : undefined,
+            ]);
+          } else {
+            wsData.push([
+              row.Thesis.title,
+              `${formatName(row.Student)}`,
+              row.borrowedAt ? format(row.borrowedAt, "PP") : "",
+              row.borrowDueAt ? format(row.borrowDueAt, "PP") : "",
+              row.returnedAt ? format(row.returnedAt, "PP") : "",
+              (() => {
+                if (!row.returnedAt) {
+                  return "Book not returned yet";
+                }
+                if (!row.borrowDueAt) return "";
+                if (row.returnedAt <= row.borrowDueAt) {
+                  return "Returned on time";
+                }
+                return "Returned late";
+              })(),
+              type === "PENALTY"
+                ? row.penaltyIsPaid
+                  ? "Settled"
+                  : "Unsettled"
+                : undefined,
+            ]);
+          }
         });
 
         // Create worksheet and workbook
@@ -168,13 +210,12 @@ function Page() {
         ws["!cols"] = colWidths;
 
         // Export file
-        XLSX.writeFile(wb, `${student.studentId}_report.xlsx`);
+        XLSX.writeFile(wb, `${student?.studentId || "All"}_borrow_report.xlsx`);
       }
     },
   });
 
   const handleDownload = () => {
-    if (!studentId) throw new Error("No student id");
     mutate({
       type,
       startDate: date?.from,
@@ -258,7 +299,11 @@ function Page() {
                             <CommandItem
                               value={student.id}
                               key={student.id}
-                              onSelect={() => setStudentId(student.id)}
+                              onSelect={() =>
+                                setStudentId((prev) =>
+                                  prev === student.id ? null : student.id,
+                                )
+                              }
                             >
                               <div className="flex flex-col">
                                 <p>{formatName(student)}</p>
@@ -360,6 +405,16 @@ function Page() {
                       <p>Manuscript Title</p>
                     </div>
                   </TableHead>
+                  {!studentId ? (
+                    <TableHead>
+                      <div className="flex flex-row items-center gap-1">
+                        <User className="size-4" />
+                        <p>Borrower</p>
+                      </div>
+                    </TableHead>
+                  ) : (
+                    <></>
+                  )}
                   <TableHead>
                     <div className="flex flex-row items-center gap-1">
                       <p>Date Borrowed</p>
@@ -400,6 +455,15 @@ function Page() {
                           {borrow.Thesis.title}
                         </p>
                       </TableCell>
+                      {!studentId ? (
+                        <TableCell>
+                          <div className="flex flex-row items-center gap-1">
+                            <p>{formatName(borrow.Student)}</p>
+                          </div>
+                        </TableCell>
+                      ) : (
+                        <></>
+                      )}
                       <TableCell>
                         <div className="flex flex-col gap-1">
                           <p className="text-sm text-wrap">
@@ -476,17 +540,10 @@ function Page() {
                 <LoaderCircle className="animate-spin" />
               </div>
             )}
-            {!studentId ? (
-              <div className="text-muted-foreground flex items-center justify-center p-5 text-sm gap-1">
-                <SearchIcon/><p>Search Student</p>
+            {!count && !isLoading && (
+              <div className="text-muted-foreground flex items-center justify-center p-5 text-sm">
+                <p>No report found</p>
               </div>
-            ) : (
-              !count &&
-              !isLoading && (
-                <div className="text-muted-foreground flex items-center justify-center p-5 text-sm">
-                  <p>No report found</p>
-                </div>
-              )
             )}
             <Separator />
             <TablePagination count={count} />
