@@ -7,6 +7,7 @@ import {
   ChangePasswordForm,
   ChangeUsernameForm,
 } from "./_components/forms";
+import TagsPage from "./_components/tag-settings";
 
 function Page() {
   return (
@@ -21,6 +22,7 @@ function Page() {
         </div>
       </div>
       <div className=" space-y-4 sm:px-5 sm:py-2">
+        <TagsPage/>
         <AdminDetailsForm />
         <ChangeUsernameForm />
         <ChangePasswordForm />

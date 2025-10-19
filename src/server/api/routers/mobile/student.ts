@@ -22,18 +22,38 @@ export const mobileStudentRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input: { studentId } }) => {
-      const borrowedCount = await ctx.db.studentBorrow.count({
-        where: {
-          studentId,
-          status: { in: ["BORROWED"] },
-        },
-      });
-      const borrowHistory = await ctx.db.studentBorrow.count({
-        where: { studentId },
-      });
+      const [borrowedCount, cancelledCount, pendingCount, returnedCount] =
+        await Promise.all([
+          ctx.db.studentBorrow.count({
+            where: {
+              studentId,
+              status: { in: ["BORROWED"] },
+            },
+          }),
+          ctx.db.studentBorrow.count({
+            where: {
+              studentId,
+              status: { in: ["CANCELLED"] },
+            },
+          }),
+          ctx.db.studentBorrow.count({
+            where: {
+              studentId,
+              status: { in: ["PENDING"] },
+            },
+          }),
+          ctx.db.studentBorrow.count({
+            where: {
+              studentId,
+              status: { in: ["RETURNED"] },
+            },
+          }),
+        ]);
       return {
         borrowedCount,
-        borrowHistory,
+        cancelledCount,
+        pendingCount,
+        returnedCount,
       };
     }),
 
@@ -204,10 +224,12 @@ export const mobileStudentRouter = createTRPCRouter({
           },
         }),
       ]);
+      const limit = admin?.BorrowLimitSettings?.limitCount || 0;
+      const remaining = limit - borrowCount;
 
-      if (borrowCount >= (admin?.BorrowLimitSettings?.limitCount || 0))
+      if (borrowCount >= limit)
         throw new Error(
-          `You’ve reached your borrow limit. Each student is allowed a maximum of ${borrowCount} thesis borrows to ensure fair access for others.`,
+          `You’ve reached your borrow limit. Your remaining available to borrow is ${remaining <= 0 ? 0 : remaining}.`,
         );
 
       return await ctx.db.$transaction(async (tx) => {
@@ -223,6 +245,90 @@ export const mobileStudentRouter = createTRPCRouter({
             studentId,
           },
         });
+      });
+    }),
+
+  borrowManyThesis: publicProcedure
+    .input(
+      z.object({
+        studentId: z.string(),
+        thesisIds: z.array(z.string()),
+      }),
+    )
+    .mutation(async ({ ctx, input: { thesisIds, studentId } }) => {
+      const theses = await ctx.db.theses.findMany({
+        where: { id: { in: thesisIds } },
+      });
+
+      const isPenalty = await ctx.db.studentBorrow.findFirst({
+        where: { studentId, isPenalty: true, penaltyIsPaid: false },
+      });
+
+      if (isPenalty)
+        throw new Error(
+          "You can't borrow right now. You still have penalty to settle.",
+        );
+
+      if (!theses.length) throw new Error("No thesis found.");
+
+      const isBorrowed = theses.find((t) => t.available <= 0);
+
+      if (isBorrowed)
+        throw new Error(`${isBorrowed.title} is already borrowed.`);
+
+      const [admin, borrowCount] = await Promise.all([
+        ctx.db.admin.findFirst({
+          include: { BorrowLimitSettings: true },
+        }),
+        ctx.db.studentBorrow.count({
+          where: {
+            studentId,
+            status: { in: ["BORROWED", "PENDING"] },
+          },
+        }),
+      ]);
+      const limit = admin?.BorrowLimitSettings?.limitCount || 0;
+      const totalAfterBorrow = borrowCount + thesisIds.length;
+      const remaining = limit - borrowCount;
+      console.log(totalAfterBorrow);
+      if (totalAfterBorrow > limit) {
+        throw new Error(
+          `You’ve reached your borrow limit. Your remaining available to borrow is ${remaining <= 0 ? 0 : remaining}.`,
+        );
+      }
+
+      return await ctx.db.$transaction(async (tx) => {
+        // Decrement available count
+        await Promise.all(
+          theses.map((thesis) =>
+            tx.theses.update({
+              where: { id: thesis.id },
+              data: {
+                available: thesis.available - 1,
+              },
+            }),
+          ),
+        );
+        // Remove from student's bag (if applicable)
+        await Promise.all(
+          thesisIds.map((thesisId) =>
+            tx.studentBag.deleteMany({
+              where: {
+                studentId,
+                thesisId,
+              },
+            }),
+          ),
+        );
+        // Create multiple borrow records
+        const borrows = await tx.studentBorrow.createMany({
+          data: thesisIds.map((thesisId) => ({
+            thesisId,
+            studentId,
+          })),
+        });
+
+        return borrows;
       });
     }),
 
@@ -268,6 +374,35 @@ export const mobileStudentRouter = createTRPCRouter({
         where: {
           studentId,
           status: "BORROWED",
+        },
+        include: {
+          Thesis: {
+            include: {
+              Tags: {
+                include: {
+                  Tag: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      console.log(data);
+      return data;
+    }),
+
+  getBorrowsByStatus: publicProcedure
+    .input(
+      z.object({
+        studentId: z.string(),
+        status: z.enum(["PENDING", "BORROWED", "RETURNED", "CANCELLED"]),
+      }),
+    )
+    .query(async ({ ctx, input: { studentId, status } }) => {
+      const data = await ctx.db.studentBorrow.findMany({
+        where: {
+          studentId,
+          status,
         },
         include: {
           Thesis: {

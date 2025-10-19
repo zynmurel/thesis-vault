@@ -1,21 +1,28 @@
 "use client";
 import { api } from "@/trpc/react";
-import { BookCheck, BookText, ChevronRight, LoaderCircle } from "lucide-react";
+import {
+  Book,
+  BookCheck,
+  BookDashed,
+  BookText,
+  BookX,
+  ChevronRight,
+  LoaderCircle,
+} from "lucide-react";
 import { useParams } from "next/navigation";
 import React, { useState } from "react";
 import PendingBorrows from "./_components/pending-borrows";
 import RecentActivity from "./_components/recent-activity";
 import ThesiPage from "../theses/[thesisId]/_components/thesisPage";
 import { parseAsStringEnum, useQueryState } from "nuqs";
-import ActiveBorrows from "./_components/active-borrows";
-import BorrowHistory from "./_components/borrow-history";
+import ShowBorrows from "./_components/show-borrows";
 
 function Page() {
   const { studentId } = useParams();
   const [viewThesis, setViewThesis] = useState<string | null>(null);
   const [showPage, setShowPage] = useQueryState(
     "page-shown",
-    parseAsStringEnum(["active", "history"]),
+    parseAsStringEnum(["PENDING", "BORROWED", "RETURNED", "CANCELLED"]),
   );
   const { data } = api.mobile.student.getStudentInfo.useQuery({
     studentId: String(studentId),
@@ -37,16 +44,8 @@ function Page() {
     );
   }
 
-  if (showPage === "active") {
-    return (
-      <ActiveBorrows/>
-    );
-  }
-
-  if (showPage === "history") {
-    return (
-      <BorrowHistory/>
-    );
+  if (!!showPage) {
+    return <ShowBorrows />;
   }
 
   return (
@@ -83,7 +82,32 @@ function Page() {
       </div>
       <div className="z-50 -mt-8 flex flex-col gap-2 px-2">
         <div className="grid grid-cols-2 gap-1">
-          <div className="flex flex-row items-center justify-between rounded bg-white p-4 py-2 shadow" onClick={()=>setShowPage("active")}>
+          <div
+            className="flex flex-row items-center justify-between rounded bg-white p-4 py-2 shadow"
+            onClick={() => setShowPage("PENDING")}
+          >
+            <div className="flex flex-col">
+              <p className="text-foreground/60 px-1 text-[10px]">
+                Pending Borrows
+              </p>
+              <div className="text-foreground/80 flex flex-row items-center gap-2">
+                <BookDashed className="size-6" strokeWidth={2.5} />
+                <div className="flex flex-row items-end gap-1">
+                  <p className="h-7 text-2xl font-medium">
+                    {borrows?.pendingCount ?? (
+                      <LoaderCircle className="mt-1 animate-spin" />
+                    )}
+                  </p>
+                  <p className="text-foreground/60 pb-0.5 text-[10px] font-normal">{`Book${borrows?.pendingCount ? "s" : ""}`}</p>
+                </div>
+              </div>
+            </div>
+            <ChevronRight />
+          </div>
+          <div
+            className="flex flex-row items-center justify-between rounded bg-white p-4 py-2 shadow"
+            onClick={() => setShowPage("BORROWED")}
+          >
             <div className="flex flex-col">
               <p className="text-foreground/60 px-1 text-[10px]">
                 Active Borrows
@@ -102,20 +126,41 @@ function Page() {
             </div>
             <ChevronRight />
           </div>
-          <div className="flex flex-row items-center justify-between rounded bg-white p-4 py-2 shadow" onClick={()=>setShowPage("history")}>
+          <div
+            className="flex flex-row items-center justify-between rounded bg-white p-4 py-2 shadow"
+            onClick={() => setShowPage("RETURNED")}
+          >
             <div className="flex flex-col">
-              <p className="text-foreground/60 px-1 text-[10px]">
-                Borrow History
-              </p>
-              <div className="text-foreground/90 flex flex-row items-center gap-2">
+              <p className="text-foreground/60 px-1 text-[10px]">Returned</p>
+              <div className="text-foreground/80 flex flex-row items-center gap-2">
                 <BookText className="size-6" strokeWidth={2.5} />
                 <div className="flex flex-row items-end gap-1">
                   <p className="h-7 text-2xl font-medium">
-                    {borrows?.borrowHistory ?? (
+                    {borrows?.returnedCount ?? (
                       <LoaderCircle className="mt-1 animate-spin" />
                     )}
                   </p>
-                  <p className="text-foreground/60 pb-0.5 text-[10px] font-normal">{`Book${borrows?.borrowedCount ? "s" : ""}`}</p>
+                  <p className="text-foreground/60 pb-0.5 text-[10px] font-normal">{`Book${borrows?.returnedCount ? "s" : ""}`}</p>
+                </div>
+              </div>
+            </div>
+            <ChevronRight />
+          </div>
+          <div
+            className="flex flex-row items-center justify-between rounded bg-white p-4 py-2 shadow"
+            onClick={() => setShowPage("CANCELLED")}
+          >
+            <div className="flex flex-col">
+              <p className="text-foreground/60 px-1 text-[10px]">Cancelled</p>
+              <div className="text-foreground/80 flex flex-row items-center gap-2">
+                <BookX className="size-6" strokeWidth={2.5} />
+                <div className="flex flex-row items-end gap-1">
+                  <p className="h-7 text-2xl font-medium">
+                    {borrows?.cancelledCount ?? (
+                      <LoaderCircle className="mt-1 animate-spin" />
+                    )}
+                  </p>
+                  <p className="text-foreground/60 pb-0.5 text-[10px] font-normal">{`Book${borrows?.cancelledCount ? "s" : ""}`}</p>
                 </div>
               </div>
             </div>

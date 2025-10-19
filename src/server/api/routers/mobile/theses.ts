@@ -118,6 +118,49 @@ export const mobileThesesRouter = createTRPCRouter({
           }
         : null;
     }),
+  getThesesByIds: publicProcedure
+    .input(
+      z.object({
+        thesisIds: z.array(z.string()),
+      }),
+    )
+    .query(async ({ ctx, input: { thesisIds } }) => {
+      const t = await ctx.db.theses.findMany({
+        where: {
+          id: { in: thesisIds },
+        },
+        include: {
+          Tags: {
+            include: {
+              Tag: true,
+            },
+          },
+          Course: true,
+          Ratings: true,
+          StudentBorrows: {
+            where: {
+              status: { in: ["BORROWED", "PENDING"] },
+            },
+            orderBy: {
+              createdAt: "desc", // or updatedAt
+            },
+            take: 1,
+          },
+        },
+      });
+
+      return t.length
+        ? t.map((val) => {
+            return {
+              ...val,
+              averageRating: val.Ratings.length
+                ? val.Ratings.reduce((a, c) => a + c.stars, 0) /
+                  val.Ratings.length
+                : 0,
+            };
+          })
+        : null;
+    }),
 
   getThesisComments: publicProcedure
     .input(

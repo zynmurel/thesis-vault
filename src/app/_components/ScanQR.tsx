@@ -109,7 +109,11 @@ const ScannedView = ({
     api.theses.confirmThesisBorrow.useMutation({
       onSuccess: async () => {
         toast.success("Borrow Confirmed");
-        await utils.theses.getThesisByQR.invalidate();
+        await Promise.all([
+          utils.theses.getThesisByQR.invalidate(),
+          utils.borrows.getBorrows.invalidate(),
+          utils.borrows.getBorrowsCount.invalidate(),
+        ]);
       },
       onError() {
         toast.error("Failed to confirm student borrow. Please try again.");
@@ -120,7 +124,11 @@ const ScannedView = ({
       onSuccess: async () => {
         toast.success("Thesis Marked as Returned");
         onClose();
-        await utils.theses.getThesisByQR.invalidate();
+        await Promise.all([
+          utils.theses.getThesisByQR.invalidate(),
+          utils.borrows.getBorrows.invalidate(),
+          utils.borrows.getBorrowsCount.invalidate(),
+        ]);
       },
       onError() {
         toast.error("Processing return Failed. Please try again.");
@@ -132,7 +140,11 @@ const ScannedView = ({
       onSuccess: async () => {
         toast.success("Thesis borrow declined");
         onClose();
-        await utils.theses.getThesisByQR.invalidate();
+        await Promise.all([
+          utils.theses.getThesisByQR.invalidate(),
+          utils.borrows.getBorrows.invalidate(),
+          utils.borrows.getBorrowsCount.invalidate(),
+        ]);
       },
       onError() {
         toast.error("Processing return Failed. Please try again.");
@@ -329,8 +341,8 @@ const ScannedView = ({
                                     }}
                                     disabled={
                                       isLoadingId.includes(borrow.id) &&
-                                      confirmBorrowIsPending &&
-                                      declineBorrowIsPending
+                                      (confirmBorrowIsPending ||
+                                        declineBorrowIsPending)
                                     }
                                   >
                                     <Check />

@@ -57,7 +57,7 @@ export function AdminDetailsForm() {
   }, [data]);
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border p-5 shadow">
+    <div className="flex flex-col gap-3 rounded-lg border p-5 shadow bg-background">
       <div className="flex flex-row items-center gap-2 font-semibold">
         <UserCircle strokeWidth={2.5} />
         Admin Information
@@ -141,7 +141,7 @@ export function ChangePasswordForm() {
   });
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border p-5 shadow">
+    <div className="flex flex-col gap-3 rounded-lg border p-5 shadow bg-background">
       <div className="flex flex-row items-center gap-2 font-semibold">
         <Lock strokeWidth={2.5} />
         Change Password
@@ -247,7 +247,7 @@ export function ChangeUsernameForm() {
   }, [data]);
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border p-5 shadow">
+    <div className="flex flex-col gap-3 rounded-lg border p-5 shadow bg-background">
       <div className="flex flex-row items-center gap-2 font-semibold">
         <UserRoundCheck strokeWidth={2.5} />
         Change Username
@@ -305,7 +305,7 @@ export function ChangeBorrowLimit() {
   }, [data]);
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border p-5 shadow">
+    <div className="flex flex-col gap-3 rounded-lg border p-5 shadow bg-background">
       <div className="flex flex-row items-center gap-2 font-semibold">
         <div className="flex flex-col">
           <p className="font-semibold">Borrowed Book Limit</p>
@@ -368,7 +368,7 @@ export function ChangeBorrowDueDate() {
   }, [data]);
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border p-5 shadow">
+    <div className="flex flex-col gap-3 rounded-lg border p-5 shadow bg-background">
       <div className="flex flex-row items-center gap-2 font-semibold">
         <div className="flex flex-col">
           <p className="font-semibold">Borrowing Day Limit</p>
