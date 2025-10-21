@@ -37,10 +37,18 @@ function Notifications() {
         StudentBorrow?: StudentBorrow;
       })
   >(null);
-  const { data, isLoading } =
-    api.mobile.notification.getAllNotifications.useQuery({
+  const { data, isLoading, isFetching } =
+    api.mobile.notification.getAllNotifications.useQuery(
+      {
+        studentId: String(studentId),
+        take: take,
+        unread: isUnread,
+      },
+      { placeholderData: (prev) => prev },
+    );
+  const { data: count } =
+    api.mobile.notification.getAllNotificationsCount.useQuery({
       studentId: String(studentId),
-      take: take,
       unread: isUnread,
     });
   const { mutate } = api.mobile.notification.markAsRead.useMutation({
@@ -108,6 +116,23 @@ function Notifications() {
           );
         })
       )}
+      <div>
+        {(count || 0) > (data?.length || 0) ? (
+          isFetching ? (
+            <div
+              className="mt-1 w-full rounded-full p-2 text-center text-xs opacity-50">Loading ...</div>
+          ) : (
+            <div
+              className="mt-1 w-full rounded-full p-2 text-center text-xs"
+              onClick={() => setTake((prev) => prev + 10)}
+            >
+              Load more
+            </div>
+          )
+        ) : (
+          <></>
+        )}
+      </div>
     </div>
   );
 }
@@ -188,7 +213,7 @@ const NotificationDialog = ({
         <div className="mt- text-xs text-slate-600">
           <div>{message}</div>
           {open.type === "RETURN_WITH_PENALTY" && open.StudentBorrow ? (
-            <p className=" text-destructive mt-2">
+            <p className="text-destructive mt-2">
               {getOverdueDetail(
                 open.StudentBorrow.borrowDueAt!,
                 open.StudentBorrow.returnedAt!,

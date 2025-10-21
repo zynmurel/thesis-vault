@@ -24,6 +24,19 @@ export const mobileNotificationRouter = createTRPCRouter({
         },
       });
     }),
+  getAllNotificationsCount: publicProcedure
+    .input(
+      z.object({
+        studentId: z.string(),
+        unread: z.boolean(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const isUnreadOnly = input.unread ? { isRead: null } : {};
+      return await ctx.db.studentBorrowNotification.count({
+        where: { studentId: input.studentId, ...isUnreadOnly },
+      });
+    }),
   markAsRead: publicProcedure
     .input(
       z.object({
