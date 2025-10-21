@@ -443,4 +443,51 @@ export const mobileStudentRouter = createTRPCRouter({
         },
       });
     }),
+
+  declineThesisBorrow: publicProcedure
+    .input(
+      z.object({
+        thesisBorrowId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input: { thesisBorrowId } }) => {
+      const borrow = await ctx.db.studentBorrow.findUnique({
+        where: {
+          id: thesisBorrowId,
+          status: "PENDING",
+        },
+        include: {
+          Thesis: true,
+        },
+      });
+
+      if (!borrow) throw new Error("No Borrow Found");
+      return await ctx.db.$transaction(async (tx) => {
+        await tx.theses.update({
+          where: {
+            id: borrow.Thesis.id,
+          },
+          data: {
+            available: borrow.Thesis.available + 1,
+          },
+        });
+        //NOTIFICATION
+        await tx.studentBorrowNotification.create({
+          data: {
+            thesisId: borrow.thesisId,
+            studentId: borrow.studentId,
+            borrowId: borrow.id,
+            type: "DECLINED",
+          },
+        });
+        return await tx.studentBorrow.update({
+          where: {
+            id: thesisBorrowId,
+          },
+          data: {
+            status: "CANCELLED",
+          },
+        });
+      });
+    }),
 });

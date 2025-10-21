@@ -152,8 +152,8 @@ const getNotificationConfig = (d: any) => {
 
     case "DECLINED":
       return {
-        title: "Borrow Request Declined",
-        message: `${studentName}'s request to borrow ${thesisTitle} was declined.`,
+        title: "Borrow Request Cancelled",
+        message: `${studentName}'s request to borrow ${thesisTitle} was cancelled.`,
         icon: <XCircle className="size-6 text-red-600" strokeWidth={2.5} />,
       };
 

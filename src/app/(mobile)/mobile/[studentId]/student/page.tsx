@@ -22,7 +22,7 @@ function Page() {
   const [viewThesis, setViewThesis] = useState<string | null>(null);
   const [showPage, setShowPage] = useQueryState(
     "page-shown",
-    parseAsStringEnum(["PENDING", "BORROWED", "RETURNED", "CANCELLED"]),
+    parseAsStringEnum(["PENDING", "BORROWED", "RETURNED", "CANCELLED", "OVERDUE"]),
   );
   const { data } = api.mobile.student.getStudentInfo.useQuery({
     studentId: String(studentId),
