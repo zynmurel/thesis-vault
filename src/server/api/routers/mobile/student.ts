@@ -22,12 +22,13 @@ export const mobileStudentRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input: { studentId } }) => {
-      const [borrowedCount, cancelledCount, pendingCount, returnedCount] =
+      const [borrowedCount, cancelledCount, pendingCount, returnedCount, overdueCount] =
         await Promise.all([
           ctx.db.studentBorrow.count({
             where: {
               studentId,
               status: { in: ["BORROWED"] },
+              borrowDueAt: { gte: new Date() },
             },
           }),
           ctx.db.studentBorrow.count({
@@ -48,12 +49,20 @@ export const mobileStudentRouter = createTRPCRouter({
               status: { in: ["RETURNED"] },
             },
           }),
+          ctx.db.studentBorrow.count({
+            where: {
+              studentId,
+              status: { in: ["BORROWED"] },
+              borrowDueAt: { lt: new Date() },
+            },
+          }),
         ]);
       return {
         borrowedCount,
         cancelledCount,
         pendingCount,
         returnedCount,
+        overdueCount
       };
     }),
 
@@ -395,14 +404,29 @@ export const mobileStudentRouter = createTRPCRouter({
     .input(
       z.object({
         studentId: z.string(),
-        status: z.enum(["PENDING", "BORROWED", "RETURNED", "CANCELLED"]),
+        status: z.enum([
+          "PENDING",
+          "BORROWED",
+          "RETURNED",
+          "CANCELLED",
+          "OVERDUE",
+        ]),
       }),
     )
     .query(async ({ ctx, input: { studentId, status } }) => {
+      const whereStatus = status === "OVERDUE" ? "BORROWED" : status;
+      const whereBorrowDue =
+        whereStatus === "BORROWED"
+          ? status === "OVERDUE"
+            ? { borrowDueAt: { lt: new Date() } }
+            : { borrowDueAt: { gte: new Date() } }
+          : {};
+
       const data = await ctx.db.studentBorrow.findMany({
         where: {
           studentId,
-          status,
+          status: whereStatus,
+          borrowDueAt: { lt: new Date() },
         },
         include: {
           Thesis: {

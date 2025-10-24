@@ -5,6 +5,7 @@ import {
   BookCheck,
   BookDashed,
   BookText,
+  BookUp2,
   BookX,
   ChevronRight,
   LoaderCircle,
@@ -22,7 +23,13 @@ function Page() {
   const [viewThesis, setViewThesis] = useState<string | null>(null);
   const [showPage, setShowPage] = useQueryState(
     "page-shown",
-    parseAsStringEnum(["PENDING", "BORROWED", "RETURNED", "CANCELLED", "OVERDUE"]),
+    parseAsStringEnum([
+      "PENDING",
+      "BORROWED",
+      "RETURNED",
+      "CANCELLED",
+      "OVERDUE",
+    ]),
   );
   const { data } = api.mobile.student.getStudentInfo.useQuery({
     studentId: String(studentId),
@@ -121,6 +128,26 @@ function Page() {
                     )}
                   </p>
                   <p className="text-foreground/60 pb-0.5 text-[10px] font-normal">{`Book${borrows?.borrowedCount ? "s" : ""}`}</p>
+                </div>
+              </div>
+            </div>
+            <ChevronRight />
+          </div>
+          <div
+            className="flex flex-row items-center justify-between rounded bg-white p-4 py-2 shadow"
+            onClick={() => setShowPage("OVERDUE")}
+          >
+            <div className="flex flex-col">
+              <p className="text-foreground/60 px-1 text-[10px]">Overdue</p>
+              <div className="text-foreground/80 flex flex-row items-center gap-2">
+                <BookUp2 className="size-6" strokeWidth={2.5} />
+                <div className="flex flex-row items-end gap-1">
+                  <p className="h-7 text-2xl font-medium">
+                    {borrows?.overdueCount ?? (
+                      <LoaderCircle className="mt-1 animate-spin" />
+                    )}
+                  </p>
+                  <p className="text-foreground/60 pb-0.5 text-[10px] font-normal">{`Book${borrows?.overdueCount ? "s" : ""}`}</p>
                 </div>
               </div>
             </div>

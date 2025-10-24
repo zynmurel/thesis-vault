@@ -18,8 +18,8 @@ import {
   BookCheck,
   BookDashed,
   BookText,
+  BookUp2,
   BookX,
-  CircleDashed,
   CornerUpLeft,
   LoaderCircle,
 } from "lucide-react";
@@ -34,13 +34,24 @@ function ShowBorrows() {
   const [open, setOpen] = useState<number | null>(null);
   const [showPage, setShowPage] = useQueryState(
     "page-shown",
-    parseAsStringEnum(["PENDING", "BORROWED", "RETURNED", "CANCELLED"]),
+    parseAsStringEnum([
+      "PENDING",
+      "BORROWED",
+      "RETURNED",
+      "CANCELLED",
+      "OVERDUE",
+    ]),
   );
 
   const { data, isLoading } = api.mobile.student.getBorrowsByStatus.useQuery(
     {
       studentId: String(studentId),
-      status: showPage as "PENDING" | "BORROWED" | "RETURNED" | "CANCELLED",
+      status: showPage as
+        | "PENDING"
+        | "BORROWED"
+        | "RETURNED"
+        | "CANCELLED"
+        | "OVERDUE",
     },
     { enabled: !!studentId },
   );
@@ -74,6 +85,8 @@ function ShowBorrows() {
                 <BookCheck className="size-4" strokeWidth={3} />
               ) : showPage === "RETURNED" ? (
                 <BookText className="size-4" strokeWidth={3} />
+              ) : showPage === "OVERDUE" ? (
+                <BookUp2 className="size-4" strokeWidth={3} />
               ) : (
                 <BookX className="size-4" strokeWidth={3} />
               )}
@@ -84,7 +97,9 @@ function ShowBorrows() {
                     ? "Active Borrows"
                     : showPage === "RETURNED"
                       ? "Returned"
-                      : "Cancelled"}
+                      : showPage === "OVERDUE"
+                        ? "Overdue"
+                        : "Cancelled"}
               </p>
             </div>
             {isLoading ? (
@@ -224,10 +239,18 @@ const CancelBorrowDialog = ({
         </DialogHeader>
 
         <DialogFooter className="flex justify-end gap-2">
-          <Button disabled={declineBorrowIsPending} variant="outline" onClick={() => setOpen(null)}>
+          <Button
+            disabled={declineBorrowIsPending}
+            variant="outline"
+            onClick={() => setOpen(null)}
+          >
             No, Keep It
           </Button>
-          <Button disabled={declineBorrowIsPending} variant="destructive" onClick={handleConfirm}>
+          <Button
+            disabled={declineBorrowIsPending}
+            variant="destructive"
+            onClick={handleConfirm}
+          >
             Yes, Cancel It
           </Button>
         </DialogFooter>
