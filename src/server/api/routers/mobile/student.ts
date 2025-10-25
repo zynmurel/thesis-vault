@@ -426,7 +426,7 @@ export const mobileStudentRouter = createTRPCRouter({
         where: {
           studentId,
           status: whereStatus,
-          borrowDueAt: { lt: new Date() },
+          ...whereBorrowDue
         },
         include: {
           Thesis: {
