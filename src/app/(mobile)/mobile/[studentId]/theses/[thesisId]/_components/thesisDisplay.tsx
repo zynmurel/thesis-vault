@@ -102,7 +102,7 @@ function ThesisDisplay({ thesisId }: { thesisId: string }) {
     });
   };
 
-  const isBorrowed = data?.StudentBorrows.length;
+  const isBorrowed = data.available <= 0;
 
   return (
     <div className="text-foreground/80 flex flex-col gap-1">
@@ -141,7 +141,7 @@ function ThesisDisplay({ thesisId }: { thesisId: string }) {
           {isBorrowed ? (
             <Badge className="bg-red-500 px-3">Not Available</Badge>
           ) : (
-            <Badge className="bg-blue-500 px-3">Available</Badge>
+            <Badge className="bg-blue-500 px-3">Available ({data.available})</Badge>
           )}
         </div>
       </div>

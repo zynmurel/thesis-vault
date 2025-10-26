@@ -274,7 +274,7 @@ const Thesis = ({
         />
         <div className="text-foreground/80 flex-col gap-1 text-xs">
           <p className="font-black uppercase">
-            {thesis.title} {thesis.averageRating}
+            {thesis.title}
           </p>
           <p className="text-[12px] font-bold">
             {thesis.courseCode} - {new Date(thesis.year).getFullYear()}
