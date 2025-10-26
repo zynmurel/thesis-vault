@@ -9,6 +9,7 @@ import {
   BookOpenText,
   BookX,
   LoaderCircle,
+  Search,
   SlidersHorizontal,
 } from "lucide-react";
 import Image from "next/image";
@@ -21,14 +22,22 @@ import {
   useQueryState,
   useQueryStates,
 } from "nuqs";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { Tags, Theses, ThesesTags } from "@prisma/client";
 import ThesiPage from "./[thesisId]/_components/thesisPage";
 import StudentBag from "../_components/studentBag";
 import Bag from "./_components/bag";
+import { Card } from "@/components/ui/card";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 function Page() {
   const [show] = useQueryState("show-bag", parseAsBoolean.withDefault(false));
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+
   const [filters, setFilters] = useQueryStates({
     title: parseAsString.withDefault(""),
     take: parseAsInteger.withDefault(100),
@@ -42,23 +51,33 @@ function Page() {
   );
 
   const { data, isLoading } = api.mobile.theses.getFilters.useQuery();
+  const { data: titles, isLoading: titlesIsLoading } =
+    api.mobile.theses.getAdvanceSearchTitle.useQuery();
 
   if (show) {
     return <Bag />;
   }
+
+  const handleSelectSuggestion = (title: string) => {
+    setFilters({ ...filters, title });
+    // setSuggestions([]);
+  };
+
+  useEffect(() => {
+    titles && setSuggestions(titles);
+  }, [titles]);
 
   return (
     <div className="relative flex h-screen max-h-screen w-full flex-col">
       <div
         className={`bg-sidebar flex w-full flex-col gap-2 py-2 pb-3 shadow transition-all duration-300 ease-in-out ${showFilter ? "max-h-[600px]" : "max-h-[50px]"}`}
       >
-        <div className="flex flex-row gap-2 px-3">
-          <Input
-            onChange={(e) =>
-              setFilters((prev) => ({ ...prev, title: e.target.value }))
-            }
-            className="bg-background text-xs"
-            placeholder="Search Thesis"
+        <div className="relative flex flex-row gap-2 px-3">
+          <ThesisSearchInput
+            suggestions={suggestions}
+            handleSelectSuggestion={handleSelectSuggestion}
+            filters={filters}
+            setFilters={setFilters}
           />
           <Button
             variant={!showFilter ? "outline" : "default"}
@@ -169,6 +188,85 @@ function Page() {
   );
 }
 
+export function ThesisSearchInput({
+  suggestions,
+  handleSelectSuggestion,
+  filters,
+  setFilters
+}: {
+  suggestions: string[];
+  handleSelectSuggestion: (title: string) => void;
+  filters:any;
+  setFilters:any;
+}) {
+  const [open, setOpen] = useState(false);
+
+  const handleFocus = () => {
+    if (suggestions.length > 0) setOpen(true);
+  };
+
+  const handleBlur = () => {
+    setTimeout(() => setOpen(false), 150);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFilters({ title: value });
+
+    // Open the suggestion list when typing
+    if (suggestions.length > 0) setOpen(true);
+  };
+
+  const handleSelect = (title: string) => {
+    handleSelectSuggestion(title);
+    setFilters({ title });
+    setOpen(false);
+  };
+
+  const filteredSuggestions = suggestions.filter(s=>s.toLowerCase().includes(filters.title.toLowerCase())).slice(0,8)
+
+  return (
+    <Popover open={open}>
+      <PopoverTrigger asChild>
+        <div className="flex-1">
+          <Input
+            value={filters.title}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            className="bg-background text-xs"
+            placeholder="Search Thesis"
+          />
+        </div>
+      </PopoverTrigger>
+
+      {open && filteredSuggestions.length > 0 && (
+        <PopoverContent
+          align="start"
+          sideOffset={4}
+          className=" w-full overflow-y-auto p-0 min-w-screen rounded-none border-none"
+          // 👇 Prevent popover from stealing focus
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <Card className="rounded-none shadow-none border-none min-w-screen">
+            {filteredSuggestions.map((title, idx) => (
+              <div
+                key={idx}
+                onMouseDown={() => handleSelect(title)} // 👈 triggers before blur
+                className="hover:bg-accent cursor-pointer px-3 text-xs font-bold flex flex-row gap-1 items-center max-w-screen text-nowrap overflow-hidden capitalize"
+              >
+                <Search className=" size-4 flex-none"/>
+                {title.toLowerCase()}
+              </div>
+            ))}
+          </Card>
+        </PopoverContent>
+      )}
+    </Popover>
+  );
+}
+
+
 const Theses = () => {
   const [filters] = useQueryStates({
     title: parseAsString.withDefault(""),
@@ -240,7 +338,6 @@ const Thesis = ({
 
   const isAdded = !!bag?.find((b) => b.thesisId === thesis.id);
 
-
   const onAddToBag = (thesisId: string) => {
     mutate({
       thesisId,
@@ -273,9 +370,7 @@ const Thesis = ({
           className="bg-primary h-full w-18 rounded-lg object-cover"
         />
         <div className="text-foreground/80 flex-col gap-1 text-xs">
-          <p className="font-black uppercase">
-            {thesis.title}
-          </p>
+          <p className="font-black uppercase">{thesis.title}</p>
           <p className="text-[12px] font-bold">
             {thesis.courseCode} - {new Date(thesis.year).getFullYear()}
           </p>

@@ -12,6 +12,9 @@ export const mobileThesesRouter = createTRPCRouter({
       tags: data[1],
     };
   }),
+  getAdvanceSearchTitle: publicProcedure.query(async ({ ctx }) => {
+    return (await ctx.db.theses.findMany()).map(t=>t.title)
+  }),
   getTheses: publicProcedure
     .input(
       z.object({
