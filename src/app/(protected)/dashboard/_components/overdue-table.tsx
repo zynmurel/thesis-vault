@@ -27,7 +27,9 @@ import {
 import { api } from "@/trpc/react";
 import { formatName } from "@/lib/utils";
 import { format } from "date-fns";
+import { useRouter } from "next/navigation";
 function OverdueTable() {
+  const router = useRouter();
   const { data, isLoading } = api.dashboard.getOverdueBorrows.useQuery();
   return (
     <Card className="rounded-xl border border-gray-100 bg-white p-2 py-8 shadow-sm transition-shadow duration-200 hover:shadow-md">
@@ -42,6 +44,7 @@ function OverdueTable() {
           <Badge
             variant="outline"
             className="cursor-pointer bg-white hover:opacity-80"
+            onClick={() => router.push(`borrows?status=OVERDUE`)}
           >
             <ArrowUpRight />
             Show More

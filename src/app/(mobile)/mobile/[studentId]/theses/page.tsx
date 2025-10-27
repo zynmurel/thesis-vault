@@ -54,10 +54,6 @@ function Page() {
   const { data: titles, isLoading: titlesIsLoading } =
     api.mobile.theses.getAdvanceSearchTitle.useQuery();
 
-  if (show) {
-    return <Bag />;
-  }
-
   const handleSelectSuggestion = (title: string) => {
     setFilters({ ...filters, title });
     // setSuggestions([]);
@@ -66,6 +62,10 @@ function Page() {
   useEffect(() => {
     titles && setSuggestions(titles);
   }, [titles]);
+  
+  if (show) {
+    return <Bag />;
+  }
 
   return (
     <div className="relative flex h-screen max-h-screen w-full flex-col">
@@ -81,6 +81,7 @@ function Page() {
           />
           <Button
             variant={!showFilter ? "outline" : "default"}
+            className="ml-auto"
             onClick={() => setShowFilter((prev) => !prev)}
           >
             <SlidersHorizontal className="size-3.5" />
@@ -188,16 +189,16 @@ function Page() {
   );
 }
 
-export function ThesisSearchInput({
+function ThesisSearchInput({
   suggestions,
   handleSelectSuggestion,
   filters,
-  setFilters
+  setFilters,
 }: {
   suggestions: string[];
   handleSelectSuggestion: (title: string) => void;
-  filters:any;
-  setFilters:any;
+  filters: any;
+  setFilters: any;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -223,18 +224,22 @@ export function ThesisSearchInput({
     setOpen(false);
   };
 
-  const filteredSuggestions = suggestions.filter(s=>s.toLowerCase().includes(filters.title.toLowerCase())).slice(0,8)
+  const filteredSuggestions = suggestions
+    .filter((s) => s.toLowerCase().includes(filters.title.toLowerCase()))
+    .slice(0, 8);
 
   return (
     <Popover open={open}>
       <PopoverTrigger asChild>
-        <div className="flex-1">
+        <div
+          className={`flex-1 transition-all duration-1000 ${open && "absolute top-0 right-1 left-1 z-20"}`}
+        >
           <Input
             value={filters.title}
             onChange={handleChange}
             onFocus={handleFocus}
             onBlur={handleBlur}
-            className="bg-background text-xs"
+            className={`bg-background w-full text-xs`}
             placeholder="Search Thesis"
           />
         </div>
@@ -244,18 +249,18 @@ export function ThesisSearchInput({
         <PopoverContent
           align="start"
           sideOffset={4}
-          className=" w-full overflow-y-auto p-0 min-w-screen rounded-none border-none"
+          className="w-full min-w-screen overflow-y-auto rounded-none border-none p-0"
           // 👇 Prevent popover from stealing focus
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <Card className="rounded-none shadow-none border-none min-w-screen">
+          <Card className="min-w-screen rounded-none border-none shadow-none">
             {filteredSuggestions.map((title, idx) => (
               <div
                 key={idx}
                 onMouseDown={() => handleSelect(title)} // 👈 triggers before blur
-                className="hover:bg-accent cursor-pointer px-3 text-xs font-bold flex flex-row gap-1 items-center max-w-screen text-nowrap overflow-hidden capitalize"
+                className="hover:bg-accent flex max-w-screen cursor-pointer flex-row items-center gap-1 overflow-hidden px-3 text-xs font-bold text-nowrap capitalize"
               >
-                <Search className=" size-4 flex-none"/>
+                <Search className="size-4 flex-none" />
                 {title.toLowerCase()}
               </div>
             ))}
@@ -265,7 +270,6 @@ export function ThesisSearchInput({
     </Popover>
   );
 }
-
 
 const Theses = () => {
   const [filters] = useQueryStates({

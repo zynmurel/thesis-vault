@@ -21,7 +21,9 @@ import { ArrowUpRight, BookDashed, BookUp2, LoaderCircle } from "lucide-react";
 import { api } from "@/trpc/react";
 import { formatName } from "@/lib/utils";
 import { format } from "date-fns";
+import { useRouter } from "next/navigation";
 function ThesesBooksTable() {
+  const router = useRouter()
   const { data, isLoading } = api.dashboard.getDashboardBooks.useQuery();
   return (
     <Card className="rounded-xl border border-gray-100 bg-white p-2 py-8 shadow-sm transition-shadow duration-200 hover:shadow-md">
@@ -36,6 +38,7 @@ function ThesesBooksTable() {
           <Badge
             variant="outline"
             className="cursor-pointer bg-white hover:opacity-80"
+            onClick={()=>router.push(`theses`)}
           >
             <ArrowUpRight />
             Show More

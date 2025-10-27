@@ -21,10 +21,12 @@ import { ArrowUpRight, BookDashed, BookUp2, LoaderCircle } from "lucide-react";
 import { api } from "@/trpc/react";
 import { formatName } from "@/lib/utils";
 import { format } from "date-fns";
+import { useRouter } from "next/navigation";
 function BorrowedBooksTable() {
+  const router = useRouter();
   const { data, isLoading } = api.dashboard.getDashboardBorrows.useQuery();
   return (
-    <Card className="rounded-xl border w-full border-gray-100 bg-white p-2 py-8 shadow-sm transition-shadow duration-200 hover:shadow-md">
+    <Card className="w-full rounded-xl border border-gray-100 bg-white p-2 py-8 shadow-sm transition-shadow duration-200 hover:shadow-md">
       <CardHeader>
         <CardTitle className="flex flex-row items-center gap-1 font-semibold tabular-nums">
           <BookUp2 className="size-5" />
@@ -35,6 +37,7 @@ function BorrowedBooksTable() {
           <Badge
             variant="outline"
             className="cursor-pointer bg-white hover:opacity-80"
+            onClick={() => router.push(`borrows?status=BORROWED`)}
           >
             <ArrowUpRight />
             Show More
@@ -55,7 +58,9 @@ function BorrowedBooksTable() {
             {data?.map((borrow, i) => (
               <TableRow key={i}>
                 <TableCell>{formatName(borrow.Student)}</TableCell>
-                <TableCell className=" max-w-60"><p className=" text-wrap">{borrow.Thesis.title}</p></TableCell>
+                <TableCell className="max-w-60">
+                  <p className="text-wrap">{borrow.Thesis.title}</p>
+                </TableCell>
                 <TableCell>
                   {format(borrow.updatedAt, "MM/dd/yyyy, hh:mm:aa")}
                 </TableCell>
