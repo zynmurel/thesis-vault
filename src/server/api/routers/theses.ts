@@ -75,7 +75,8 @@ export const thesesRouter = createTRPCRouter({
       z.object({
         id: z.string().optional(),
         title: z.string(),
-        abstract: z.string(),
+        abstract: z.string().optional(),
+        thesesUrl: z.string(),
         year: z.string(),
         quantity: z.number(),
         members: z.string(),
@@ -92,6 +93,7 @@ export const thesesRouter = createTRPCRouter({
           title,
           abstract,
           year,
+          thesesUrl,
           members,
           courseCode,
           tagIds,
@@ -119,6 +121,7 @@ export const thesesRouter = createTRPCRouter({
             quantity,
             available: quantity,
             thesisPhoto,
+            thesesUrl,
             Tags: {
               createMany: {
                 data: tagIds.map((tagId) => ({ tagId })),
@@ -135,6 +138,7 @@ export const thesesRouter = createTRPCRouter({
               (thesis?.available || 0) + (quantity - (thesis?.quantity || 0)),
             courseCode,
             thesisPhoto,
+            thesesUrl,
             Tags: {
               deleteMany: {},
               createMany: {

@@ -154,18 +154,26 @@ export const reportRouter = createTRPCRouter({
 
         const whereStudentId = studentId ? { studentId } : {};
 
-        return await ctx.db.studentBorrow.findMany({
-          where: {
-            ...isPenaltyOnly,
-            ...dateFilter,
-            ...whereStudentId,
-            status: { notIn: ["PENDING", "CANCELLED"] },
-          },
-          include: {
-            Thesis: true,
-            Student: true,
-          },
-        });
+        return await ctx.db.studentBorrow
+          .findMany({
+            where: {
+              ...isPenaltyOnly,
+              ...dateFilter,
+              ...whereStudentId,
+              status: { notIn: ["PENDING", "CANCELLED"] },
+            },
+            include: {
+              Thesis: true,
+              Student: true,
+            },
+          })
+          .then((d) => {
+            return {
+              data: d,
+              startDate,
+              endDate,
+            };
+          });
       },
     ),
   getStudentWithPenalties: protectedProcedure

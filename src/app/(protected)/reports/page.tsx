@@ -35,7 +35,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { BorrowStatus, cn, formatName } from "@/lib/utils";
+import {
+  BorrowStatus,
+  cn,
+  formatName,
+  getBase64ImageFromUrl,
+} from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
@@ -66,6 +71,12 @@ import {
 } from "@/components/ui/command";
 import { toast } from "sonner";
 
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
+import { type TDocumentDefinitions } from "pdfmake/interfaces";
+
+(pdfMake as any).vfs = pdfFonts.vfs;
+
 function Page() {
   const [pagination] = useQueryStates({
     skip: parseAsInteger.withDefault(0),
@@ -95,123 +106,177 @@ function Page() {
     });
 
   const { mutate, isPending } = api.report.getReportPrint.useMutation({
-    onSuccess: (data) => {
+    onSuccess: async ({ data, startDate, endDate }) => {
       if (!data[0]) {
         toast.error("No data found");
-      } else {
-        const student = studentId ? data[0].Student : null;
-
-        const wsData: any[][] = [];
-        // Add student info rows
-        if (student) {
-          wsData.push([`Student Borrow Report`]);
-          wsData.push([`Student: ${formatName(student)}`]);
-          wsData.push([`ID: ${student.id}`]);
-          wsData.push([
-            `Course/Year: ${student.courseCode} - ${student.year}${student.section}`,
-          ]);
-          wsData.push([
-            `Course/Year: ${student.courseCode} - ${student.year}${student.section}`,
-          ]);
-          wsData.push([`Date : ${format(new Date(), "PPP")}`]);
-        } else {
-          wsData.push([`Student Borrow Report`]);
-          wsData.push([`Date : ${format(new Date(), "PPP")}`]);
-        }
-        wsData.push([]); // blank row
-
-        // Add table headers
-        if (student) {
-          wsData.push([
-            "Manuscript Title",
-            "Date Borrowed",
-            "Due Date",
-            "Date Returned",
-            "Status",
-            type === "PENALTY" ? "Penalty Status" : undefined,
-          ]);
-        } else {
-          wsData.push([
-            "Manuscript Title",
-            "Borrower",
-            "Date Borrowed",
-            "Due Date",
-            "Date Returned",
-            "Status",
-            type === "PENALTY" ? "Penalty Status" : undefined,
-          ]);
-        }
-
-        // Add table data
-        data.forEach((row) => {
-          if (student) {
-            wsData.push([
-              row.Thesis.title,
-              row.borrowedAt ? format(row.borrowedAt, "PP") : "",
-              row.borrowDueAt ? format(row.borrowDueAt, "PP") : "",
-              row.returnedAt ? format(row.returnedAt, "PP") : "",
-              (() => {
-                if (!row.returnedAt) {
-                  return "Book not returned yet";
-                }
-                if (!row.borrowDueAt) return "";
-                if (row.returnedAt <= row.borrowDueAt) {
-                  return "Returned on time";
-                }
-                return "Returned late";
-              })(),
-              type === "PENALTY"
-                ? row.penaltyIsPaid
-                  ? "Settled"
-                  : "Unsettled"
-                : undefined,
-            ]);
-          } else {
-            wsData.push([
-              row.Thesis.title,
-              `${formatName(row.Student)}`,
-              row.borrowedAt ? format(row.borrowedAt, "PP") : "",
-              row.borrowDueAt ? format(row.borrowDueAt, "PP") : "",
-              row.returnedAt ? format(row.returnedAt, "PP") : "",
-              (() => {
-                if (!row.returnedAt) {
-                  return "Book not returned yet";
-                }
-                if (!row.borrowDueAt) return "";
-                if (row.returnedAt <= row.borrowDueAt) {
-                  return "Returned on time";
-                }
-                return "Returned late";
-              })(),
-              type === "PENALTY"
-                ? row.penaltyIsPaid
-                  ? "Settled"
-                  : "Unsettled"
-                : undefined,
-            ]);
-          }
-        });
-
-        // Create worksheet and workbook
-        const ws = XLSX.utils.aoa_to_sheet(wsData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "User Report");
-
-        // Set column widths
-        const colWidths = [
-          { wch: 30 },
-          { wch: 15 },
-          { wch: 15 },
-          { wch: 15 },
-          { wch: 20 },
-          { wch: 20 },
-          { wch: 15 },
-        ];
-        ws["!cols"] = colWidths;
-
-        // Export file
-        XLSX.writeFile(wb, `${student?.studentId || "All"}_borrow_report.xlsx`);
+        return;
       }
+
+      const student = studentId ? data[0].Student : null;
+
+      // Title and metadata
+      const reportTitle = "Student Borrow Report";
+      const reportDate =
+        startDate && endDate
+          ? `Report Period: ${format(startDate, "PPP")} to ${format(endDate, "PPP")}`
+          : `Report Period: From the beginning of thesis borrowing`;
+      // Table headers
+      const hasPenalty = type === "PENALTY";
+      const headers = student
+        ? [
+            "MANUSCRIPT TITLE",
+            "BORROWED",
+            "OVERDUE",
+            "RETURNED",
+            "STATUS",
+            ...(hasPenalty ? ["PENALTY STATUS"] : []),
+          ]
+        : [
+            "MANUSCRIPT TITLE",
+            "BORROWER",
+            "BORROWED",
+            "OVERDUE",
+            "RETURNED",
+            "STATUS",
+            ...(hasPenalty ? ["PENALTY STATUS"] : []),
+          ];
+      const body = [
+        headers.map((h) => ({ text: h, bold: true, fontSize: 9 })),
+        ...data.map((row) => {
+          const status = !row.returnedAt
+            ? "Book not returned yet"
+            : row.returnedAt <= row.borrowDueAt!
+              ? "Returned on time"
+              : "Returned late";
+
+          const baseRow = student
+            ? [
+                row.Thesis.title,
+                row.borrowedAt ? format(row.borrowedAt, "PP") : "",
+                row.borrowDueAt ? format(row.borrowDueAt, "PP") : "",
+                row.returnedAt ? format(row.returnedAt, "PP") : "",
+                status,
+              ]
+            : [
+                row.Thesis.title,
+                `${row.Student.firstName} ${row.Student.lastName}`,
+                row.borrowedAt ? format(row.borrowedAt, "PP") : "",
+                row.borrowDueAt ? format(row.borrowDueAt, "PP") : "",
+                row.returnedAt ? format(row.returnedAt, "PP") : "",
+                status,
+              ];
+
+          if (hasPenalty)
+            baseRow.push(row.penaltyIsPaid ? "Settled" : "Unsettled");
+          return baseRow.map((cell, index) => {
+            const dateColums = student ? [2, 3, 4, 5] : [2, 3, 4];
+            const isDateColumn = dateColums.includes(index); // indexes for date columns
+            return {
+              text: cell,
+              fontSize: 8,
+              noWrap: isDateColumn, // 👈 prevent wrapping for date columns
+            };
+          });
+        }),
+      ];
+      const colCount = body[0]?.length || 0; // number of columns based on headers
+      const widths = Array(colCount).fill("auto"); // generate equal widths
+
+      const headerImageBase64 = await getBase64ImageFromUrl(
+        "/images/report-head.png",
+      );
+      const footerImageBase64 = await getBase64ImageFromUrl(
+        "/images/report-foot.png",
+      );
+
+      const docDefinition: TDocumentDefinitions = {
+        // 🔹 Background images (full width)
+        header: {
+          stack: [
+            {
+              image: headerImageBase64,
+              width: 595.28, // full width for A4 at 72 DPI
+              height: 76,
+              absolutePosition: { x: 0, y: 0 },
+              alignment: "center",
+            },
+          ],
+          margin: [0, 0, 0, 30],
+        },
+
+        content: [
+          { text: reportTitle, style: "header", marginTop: 50 },
+          student
+            ? {
+                text: `Student: ${student.firstName} ${student.lastName}\nID: ${student.studentId}\nCourse/Year: ${student.courseCode}-${student.year}${student.section}\n${reportDate}`,
+                margin: [0, 0, 0, 10],
+                style: "header",
+              }
+            : { text: reportDate, margin: [0, 0, 0, 10], style: "header" },
+          {
+            style: "tableExample",
+            table: {
+              headerRows: 1,
+              widths,
+              body,
+            },
+            layout: {
+              hLineWidth: () => 0.5,
+              vLineWidth: () => 0.5,
+              hLineColor: () => "#aaaaaa",
+              vLineColor: () => "#aaaaaa",
+              paddingLeft: () => 6,
+              paddingRight: () => 6,
+              paddingTop: () => 4,
+              paddingBottom: () => 4,
+            },
+            margin: [0, 0, 0, 20],
+          },
+        ],
+
+        styles: {
+          header: {
+            fontSize: 10,
+            bold: true,
+            margin: [0, 0, 0, 10],
+          },
+          tableExample: {
+            fontSize: 7,
+          },
+        },
+
+        footer: (currentPage, pageCount) => {
+          return {
+            margin: [0, 5, 0, 0],
+            stack: [
+              // Text ABOVE the image
+              {
+                columns: [
+                  {
+                    text: `Thesis Vault : Northwest Samar State University`,
+                    alignment: "left",
+                    fontSize: 8,
+                    bold: true,
+                    color: "#005e36",
+                    margin: [40, 0, 0, 2], // small space before image
+                  },
+                  {
+                    text: `Page ${currentPage} of ${pageCount}`,
+                    alignment: "right",
+                    fontSize: 8,
+                    margin: [0, 0, 40, 2],
+                  },
+                ],
+              },
+            ],
+          };
+        },
+      };
+
+      // Create and download the PDF
+      pdfMake
+        .createPdf(docDefinition)
+        .download(`${student?.studentId || "All"}_borrow_report.pdf`);
     },
   });
 

@@ -9,11 +9,13 @@ export const tagsRouter = createTRPCRouter({
       },
     });
   }),
-  getById: protectedProcedure.input(z.number()).query(async ({ ctx, input }) => {
-    return ctx.db.tags.findUnique({
-      where: { id: input },
-    });
-  }),
+  getById: protectedProcedure
+    .input(z.number())
+    .query(async ({ ctx, input }) => {
+      return ctx.db.tags.findUnique({
+        where: { id: input },
+      });
+    }),
 
   upsert: protectedProcedure
     .input(
@@ -34,9 +36,11 @@ export const tagsRouter = createTRPCRouter({
       });
     }),
 
-  delete: protectedProcedure.input(z.number()).mutation(async ({ ctx, input }) => {
-    return ctx.db.tags.delete({
-      where: { id: input },
-    });
-  }),
+  delete: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.tags.delete({
+        where: { id: input.id },
+      });
+    }),
 });

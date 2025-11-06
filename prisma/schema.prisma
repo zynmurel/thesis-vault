@@ -146,7 +146,8 @@ model Theses {
     id          String           @id @default(uuid())
     courseCode  String
     thesisPhoto String
-    abstract    String
+    abstract    String?
+    thesesUrl   String?
     title       String
     members     String
     quantity    Int              @default(1)
@@ -176,8 +177,8 @@ model Tags {
 model ThesesTags {
     thesisId String
     tagId    Int
-    Thesis   Theses @relation(fields: [thesisId], references: [id])
-    Tag      Tags   @relation(fields: [tagId], references: [id])
+    Thesis   Theses @relation(fields: [thesisId], references: [id], onDelete: Cascade)
+    Tag      Tags   @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
     @@id([thesisId, tagId])
 }

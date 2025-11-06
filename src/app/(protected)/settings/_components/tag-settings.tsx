@@ -13,14 +13,17 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { BadgeCheck, Edit } from "lucide-react";
+import { BadgeCheck, Edit, Trash } from "lucide-react";
+import { TagsDeleteModal } from "./delete-tag-modal";
 
 export default function TagsPage() {
   const { data: tags, refetch } = api.tags.getAll.useQuery();
   const [thesesId, setThesesId] = useQueryState("tag-upsert", parseAsString);
+  const [, setTagDeleteId] = useQueryState("tag-delete", parseAsString);
 
   return (
     <Card className="grid gap-2 p-6">
+      <TagsDeleteModal/>
       <div className="flex items-center justify-between">
         <div className="flex flex-row items-center gap-2">
           <BadgeCheck className="size-5" strokeWidth={3} />
@@ -50,6 +53,13 @@ export default function TagsPage() {
                     onClick={() => setThesesId(String(tag.id))}
                   >
                     <Edit />
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setTagDeleteId(String(tag.id))}
+                  >
+                    <Trash />
                   </Button>
                 </TableCell>
               </TableRow>

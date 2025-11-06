@@ -48,7 +48,8 @@ const thesisSchema = z.object({
   thesisPhoto: z.any().optional(),
   courseCode: z.string(),
   title: z.string(),
-  abstract: z.string(),
+  abstract: z.string().optional(),
+  thesisUrl: z.any().optional(),
   year: z.string().min(1, { message: "Year is required" }),
   quantity: z.number().min(1, { message: "Quantity must not be less than 1" }),
   tags: z.array(z.number()),
@@ -70,6 +71,8 @@ interface Props {
   isPending: boolean;
   thesisPhoto: string | null;
   setThesisPhoto: Dispatch<SetStateAction<string | null>>;
+  thesisUrl: string | null;
+  setThesisUrl: Dispatch<SetStateAction<string | null>>;
 }
 
 export default function UpsertThesis() {
@@ -81,6 +84,7 @@ export default function UpsertThesis() {
   );
 
   const [thesisPhoto, setThesisPhoto] = useState<string | null>(null);
+  const [thesisUrl, setThesisUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const isCreate = thesesId === "create";
   const utils = api.useUtils();
@@ -126,14 +130,22 @@ export default function UpsertThesis() {
     }
     setIsLoading(true);
     let photo = thesisPhoto;
+    let url = thesisUrl;
     if (data.thesisPhoto) {
       photo = await handleUploadSupabase(data.thesisPhoto).finally(() =>
         setIsLoading(false),
       );
     }
-    if (!photo) {
+    if (data.thesisUrl) {
+      url = await handleUploadSupabase(data.thesisUrl).finally(() =>
+        setIsLoading(false),
+      );
+    }
+    if (!photo || !url) {
       setIsLoading(false);
-      form.setError("thesisPhoto", { message: "Image is required" });
+      !photo && form.setError("thesisPhoto", { message: "Image is required" });
+      !url &&
+        form.setError("thesisUrl", { message: "Thesis PDF File is required" });
     } else {
       mutate({
         id: thesesId === "ALL" ? "" : String(thesesId),
@@ -141,6 +153,7 @@ export default function UpsertThesis() {
         abstract: data.abstract,
         year: data.year,
         courseCode: data.courseCode,
+        thesesUrl: url,
         members: JSON.stringify(data.members),
         tagIds: data.tags,
         thesisPhoto: photo,
@@ -159,11 +172,13 @@ export default function UpsertThesis() {
         members: [{ name: "" }],
       });
       setThesisPhoto(null);
+      setThesisUrl(null);
     } else if (thesis) {
       setThesisPhoto(thesis.thesisPhoto);
+      setThesisUrl(thesis.thesesUrl);
       form.reset({
         title: thesis.title,
-        abstract: thesis.abstract,
+        abstract: thesis.abstract || undefined,
         courseCode: thesis.courseCode,
         quantity: thesis.quantity,
         tags: thesis.Tags.map((t) => t.Tag.id),
@@ -172,6 +187,7 @@ export default function UpsertThesis() {
       });
     }
   }, [thesis, thesesId]);
+  console.log(thesis);
 
   return (
     <Dialog open={!!thesesId} onOpenChange={onClose}>
@@ -189,14 +205,16 @@ export default function UpsertThesis() {
             <LoaderCircle className="animate-spin" /> Loading...
           </div>
         ) : (
-            <ThesisForm
-              form={form}
-              onSubmit={onSubmit}
-              onClose={onClose}
-              isPending={isPending || isLoading}
-              thesisPhoto={thesisPhoto}
-              setThesisPhoto={setThesisPhoto}
-            />
+          <ThesisForm
+            form={form}
+            onSubmit={onSubmit}
+            onClose={onClose}
+            isPending={isPending || isLoading}
+            thesisPhoto={thesisPhoto}
+            setThesisPhoto={setThesisPhoto}
+            thesisUrl={thesisUrl}
+            setThesisUrl={setThesisUrl}
+          />
         )}
       </DialogContent>
     </Dialog>
@@ -210,6 +228,8 @@ const ThesisForm = ({
   isPending,
   thesisPhoto,
   setThesisPhoto,
+  thesisUrl,
+  setThesisUrl,
 }: Props) => {
   const { control, handleSubmit } = form;
 
@@ -242,10 +262,29 @@ const ThesisForm = ({
     reader.readAsDataURL(file);
   };
 
+  const handleChangeUrl = (event: any) => {
+    const file = event.target.files[0];
+    // if (file.size > 2 * 1024 * 1024) {
+    //   form.setError("thesisPhoto", {
+    //     type: "manual",
+    //     message: "File size should not exceed 2MB",
+    //   });
+    //   return;
+    // }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataURL = reader.result as string;
+      setThesisUrl(dataURL);
+    };
+    form.setValue("thesisUrl", file);
+    form.clearErrors("thesisUrl");
+    reader.readAsDataURL(file);
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="mt-2 space-y-4 px-2 max-h-[70vh] overflow-y-scroll">
+        <div className="mt-2 max-h-[70vh] space-y-4 overflow-y-scroll px-2">
           <FormField
             control={form.control}
             name="thesisPhoto"
@@ -258,7 +297,7 @@ const ThesisForm = ({
                       {thesisPhoto ? (
                         <img
                           src={thesisPhoto}
-                          alt="Company Logo"
+                          alt="Thesis image"
                           className="h-20 w-20 rounded-lg border object-contain shadow-sm"
                         />
                       ) : (
@@ -331,14 +370,51 @@ const ThesisForm = ({
             />
           </div>
           <FormField
-            control={control}
-            name="abstract"
-            render={({ field }) => (
+            control={form.control}
+            name="thesisUrl"
+            render={() => (
               <FormItem>
-                <FormLabel>Abstract</FormLabel>
-                <FormControl>
-                  <Textarea placeholder="Input abstract..." {...field} />
-                </FormControl>
+                <FormLabel>Thesis PDF File</FormLabel>
+                <div className="flex items-center">
+                  <FormControl>
+                    {thesisUrl ? (
+                      <div className="flex w-full flex-col gap-2">
+                        <iframe
+                          src={`${thesisUrl}#toolbar=0&navpanes=0&scrollbar=0&page=1&view=FitH`}
+                          className="h-80 w-full rounded-lg border"
+                          title="Thesis PDF"
+                        />
+                        <Button
+                          variant={"destructive"}
+                          type="button"
+                          onClick={() => setThesisUrl(null)}
+                        >
+                          Remove File <Trash2 />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div>
+                        <div>
+                          <Label
+                            htmlFor="thesisUrl"
+                            className="hover:bg-accent inline-flex cursor-pointer items-center gap-x-2 rounded-md border px-4 py-2 text-sm font-medium"
+                          >
+                            <Camera className="h-4 w-4" />
+                            Upload
+                          </Label>
+                          <Input
+                            type="file"
+                            accept="application/pdf"
+                            className="hidden"
+                            id="thesisUrl"
+                            onChange={handleChangeUrl}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </FormControl>
+                </div>
+                <FormMessage />
               </FormItem>
             )}
           />

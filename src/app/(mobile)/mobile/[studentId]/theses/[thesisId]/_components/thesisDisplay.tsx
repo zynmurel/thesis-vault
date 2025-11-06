@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatName } from "@/lib/utils";
+import PdfFlipBook from "./epub";
 
 function ThesisDisplay({ thesisId }: { thesisId: string }) {
   const { studentId } = useParams();
@@ -141,7 +142,9 @@ function ThesisDisplay({ thesisId }: { thesisId: string }) {
           {isBorrowed ? (
             <Badge className="bg-red-500 px-3">Not Available</Badge>
           ) : (
-            <Badge className="bg-blue-500 px-3">Available ({data.available})</Badge>
+            <Badge className="bg-blue-500 px-3">
+              Available ({data.available})
+            </Badge>
           )}
         </div>
       </div>
@@ -153,12 +156,18 @@ function ThesisDisplay({ thesisId }: { thesisId: string }) {
           })}
         </div>
       </div>
-      <div className="mt-2 flex flex-col gap-1">
-        <div className="text-foreground/50 text-xs">Abstract</div>
-        <div className="flex flex-row flex-wrap gap-1">
-          <p className="px-1 text-justify text-xs">{data.abstract}</p>
+      {data.thesesUrl ? (
+        <div className="mt-2 flex flex-col gap-1">
+          <div className="text-foreground/50 text-xs">EPUB</div>
+          {/* <p className="px-1 text-justify text-xs">{data.abstract}</p> */}
+          <PdfFlipBook
+            thesis={data}
+            pdfUrl={data.thesesUrl}
+          />
         </div>
-      </div>
+      ) : (
+        <p className="px-1 text-justify text-xs mt-2">{data.abstract}</p>
+      )}
       <Separator className="my-2" />
       <div className="flex flex-row items-center gap-1 text-xs font-bold">
         <MessageSquareText className="size-4" /> Comments
