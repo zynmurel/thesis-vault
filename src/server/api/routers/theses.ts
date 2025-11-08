@@ -82,7 +82,7 @@ export const thesesRouter = createTRPCRouter({
         members: z.string(),
         courseCode: z.string(),
         tagIds: z.number().array(),
-        thesisPhoto: z.string(),
+        // thesisPhoto: z.string(),
       }),
     )
     .mutation(
@@ -97,7 +97,7 @@ export const thesesRouter = createTRPCRouter({
           members,
           courseCode,
           tagIds,
-          thesisPhoto,
+          // thesisPhoto,
           quantity,
         },
       }) => {
@@ -120,7 +120,7 @@ export const thesesRouter = createTRPCRouter({
             courseCode,
             quantity,
             available: quantity,
-            thesisPhoto,
+            // thesisPhoto,
             thesesUrl,
             Tags: {
               createMany: {
@@ -137,7 +137,7 @@ export const thesesRouter = createTRPCRouter({
             available:
               (thesis?.available || 0) + (quantity - (thesis?.quantity || 0)),
             courseCode,
-            thesisPhoto,
+            // thesisPhoto,
             thesesUrl,
             Tags: {
               deleteMany: {},

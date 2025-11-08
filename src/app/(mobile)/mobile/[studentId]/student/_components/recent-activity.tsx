@@ -1,4 +1,5 @@
 "use client";
+import ThesisFrontPageStudent from "@/app/_components/thesisFrontPageStudent";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/trpc/react";
@@ -53,22 +54,14 @@ function RecentActivity({
                       Request Date : {format(borrows.createdAt, "MM/dd/yyy")}
                     </p>
                     <Badge
-                      className={`text-[10px]  ${borrows.status === "RETURNED" ? "bg-blue-500 text-white" : borrows.status === "BORROWED" ? "bg-orange-400 text-white" : " text-foreground"}`}
+                      className={`text-[10px] ${borrows.status === "RETURNED" ? "bg-blue-500 text-white" : borrows.status === "BORROWED" ? "bg-orange-400 text-white" : "text-foreground"}`}
                       variant={"outline"}
                     >
                       {borrows.status}
                     </Badge>
                   </div>
                   <div className="flex h-full w-full flex-row gap-1">
-                    <div className="h-full w-15">
-                      <Image
-                        width={200}
-                        height={200}
-                        alt="Thesis image"
-                        src={thesis.thesisPhoto}
-                        className="bg-primary/50 h-full w-full rounded-md border object-cover"
-                      />
-                    </div>
+                    <ThesisFrontPageStudent thesis={thesis} />
                     <div className="flex flex-1 flex-col">
                       <p className="font-black uppercase">{thesis.title}</p>
                       <div className="flex flex-col justify-between">

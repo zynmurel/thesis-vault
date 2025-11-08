@@ -46,9 +46,15 @@ import type { Course, Tags } from "@prisma/client";
 import TablePagination from "../_components/table-pagination";
 
 function Page() {
-  const [_theses, setTheses] = useQueryState("thesesQR",parseAsArrayOf(parseAsString).withDefault([]));
+  const [_theses, setTheses] = useQueryState(
+    "thesesQR",
+    parseAsArrayOf(parseAsString).withDefault([]),
+  );
   const thesisIdQueryState = useQueryState("upsert", parseAsString);
-  const [_thesisPhoto, setThesisPhoto] = useQueryState("thesisPhoto", parseAsString);
+  const [_thesisPhoto, setThesisPhoto] = useQueryState(
+    "thesisPhoto",
+    parseAsString,
+  );
   const [filterTags, setFilterTags] = useQueryState(
     "tags",
     parseAsArrayOf(parseAsInteger).withDefault([]),
@@ -103,7 +109,7 @@ function Page() {
   };
 
   const onCreateThesis = () => thesisIdQueryState[1]("create");
-  const onUpdateThesis = (id:string) => thesisIdQueryState[1](id);
+  const onUpdateThesis = (id: string) => thesisIdQueryState[1](id);
 
   const onOpenThesisPhoto = (url: string) => setThesisPhoto(url);
 
@@ -123,7 +129,7 @@ function Page() {
     const foundCourse = courses.find((c) => c.code === courseCode);
     return foundCourse || tagIds.length ? (
       <div>
-        <p className=" text-xs text-muted-foreground mb-1">Filters</p>
+        <p className="text-muted-foreground mb-1 text-xs">Filters</p>
         <div className="flex flex-row flex-wrap gap-1">
           {foundCourse && (
             <Badge>
@@ -253,15 +259,19 @@ function Page() {
               <TableHead>Course</TableHead>
               <TableHead>Year</TableHead>
               <TableHead>Tags</TableHead>
-              <TableHead align="center" className=" text-center">Available</TableHead>
-              <TableHead className=" text-center">Actions</TableHead>
+              <TableHead align="center" className="text-center">
+                Available
+              </TableHead>
+              <TableHead className="text-center">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {theses?.map((thesis) => {
               return (
                 <TableRow key={thesis.id}>
-                  <TableCell><p className=" text-wrap">{thesis.title}</p></TableCell>
+                  <TableCell>
+                    <p className="text-wrap">{thesis.title}</p>
+                  </TableCell>
                   <TableCell>{thesis.courseCode}</TableCell>
                   <TableCell>{new Date(thesis.year).getFullYear()}</TableCell>
                   <TableCell className="flex flex-wrap gap-1">
@@ -273,32 +283,23 @@ function Page() {
                   </TableCell>
                   <TableCell align="center">{`${thesis.available}/${thesis.quantity}`}</TableCell>
                   <TableCell>
-                    <div className=" flex flex-row gap-1 items-center justify-center">
-
-                    <Button
-                      onClick={() => onOpenThesisPhoto(thesis.thesisPhoto)}
-                      variant={"outline"}
-                      size={"sm"}
-                      className="text-xs"
-                    >
-                      <Image/>
-                    </Button>
-                    <Button
-                      onClick={() => setTheses([thesis.id, thesis.title])}
-                      variant={"outline"}
-                      size={"sm"}
-                      className="text-xs"
-                    >
-                      <QrCode/>
-                    </Button>
-                    <Button
-                      onClick={() => onUpdateThesis(thesis.id)}
-                      variant={"outline"}
-                      size={"sm"}
-                      className="text-xs"
-                    >
-                      <Edit2/>
-                    </Button>
+                    <div className="flex flex-row items-center justify-center gap-1">
+                      <Button
+                        onClick={() => setTheses([thesis.id, thesis.title])}
+                        variant={"outline"}
+                        size={"sm"}
+                        className="text-xs"
+                      >
+                        <QrCode />
+                      </Button>
+                      <Button
+                        onClick={() => onUpdateThesis(thesis.id)}
+                        variant={"outline"}
+                        size={"sm"}
+                        className="text-xs"
+                      >
+                        <Edit2 />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>

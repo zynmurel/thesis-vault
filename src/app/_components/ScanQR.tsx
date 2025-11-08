@@ -41,6 +41,9 @@ import {
 import { toast } from "sonner";
 import { isDateBAfterDateA } from "@/lib/utils";
 import { TooltipArrow } from "@radix-ui/react-tooltip";
+import ThesisFrontPage from "./thesisFrontPage";
+import PdfFlipBook from "../(mobile)/mobile/[studentId]/theses/[thesisId]/_components/epub";
+import PdfFlipBookWeb from "./epubWeb";
 
 function SuccessBorrowThesisModal() {
   const [qr, setScanQR] = useQueryState("ScanQR", parseAsString);
@@ -177,27 +180,31 @@ const ScannedView = ({
 
   return (
     <div className="grid w-full gap-5">
-      <div className="grid grid-cols-3 gap-5">
+      <div className="flex flex-row gap-5">
+        <PdfFlipBookWeb thesis={data} pdfUrl={data.thesesUrl} />
         <div className="text-foreground/80 col-span-2 flex w-full flex-col gap-1">
           <div className="flex flex-row items-center justify-between">
-            <div className="flex w-full flex-row gap-2">
-              <div className="flex flex-row items-center gap-1 text-sm font-semibold">
-                <CalendarDays className="size-3.5" strokeWidth={3} />{" "}
-                {format(data.year, "yyyy")}
+            <div className="flex w-full flex-col gap-2">
+              <div className="flex flex-row items-center justify-between gap-1 text-sm font-semibold">
+                <div className="flex flex-row items-center gap-1 text-sm font-semibold">
+                  <CalendarDays className="size-3.5" strokeWidth={3} />{" "}
+                  {format(data.year, "yyyy")}
+                </div>
+                <div className="px-2">
+                  {data.available <= 0 ? (
+                    <Badge className="bg-red-500 px-3">Not Available</Badge>
+                  ) : (
+                    <Badge className="bg-blue-500 px-3">Available</Badge>
+                  )}
+                </div>
               </div>
-              <div className="flex flex-row items-center gap-1 text-sm font-semibold">
+
+              <div className="flex flex-row items-center gap-1 text-sm uppercase font-semibold">
                 <Tag className="size-3.5" strokeWidth={3} /> {data.Course.title}
               </div>
             </div>
-            <div className="px-2">
-              {data.available <= 0 ? (
-                <Badge className="bg-red-500 px-3">Not Available</Badge>
-              ) : (
-                <Badge className="bg-blue-500 px-3">Available</Badge>
-              )}
-            </div>
           </div>
-          <p className="justify-between font-bold uppercase">{data.title}</p>
+          <p className="justify-between text-2xl font-bold uppercase">{data.title}</p>
           <div className="flex w-full flex-row items-center justify-between">
             <div className="text-foreground/50 flex flex-row items-center gap-2 text-sm">
               <RatingRoundedStar
@@ -216,21 +223,14 @@ const ScannedView = ({
               })}
             </div>
           </div>
-          <div className="mt-2 flex flex-col gap-1">
-            <div className="text-foreground/50 text-xs">Abstract</div>
-            <div className="flex flex-row flex-wrap gap-1">
-              <p className="px-1 text-justify text-xs">{data.abstract}</p>
-            </div>
-          </div>
         </div>
-
-        <Image
+        {/* <Image
           width={200}
           height={200}
           alt="Thesis image"
           src={data.thesisPhoto}
           className="bg-primary/50 h-full w-full rounded-md border object-cover"
-        />
+        /> */}
       </div>
       <div className="grid gap-5 gap-y-3">
         <div className="">

@@ -33,6 +33,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import ThesisFrontPageStudent from "@/app/_components/thesisFrontPageStudent";
 
 function Page() {
   const [show] = useQueryState("show-bag", parseAsBoolean.withDefault(false));
@@ -62,7 +63,7 @@ function Page() {
   useEffect(() => {
     titles && setSuggestions(titles);
   }, [titles]);
-  
+
   if (show) {
     return <Bag />;
   }
@@ -365,14 +366,8 @@ const Thesis = ({
       key={index}
       className="bg-background flex flex-col gap-1 rounded-xl border p-2 shadow"
     >
-      <div className="flex flex-row items-center gap-2">
-        <Image
-          width={50}
-          height={50}
-          src={thesis.thesisPhoto}
-          alt={`thesis ${index}`}
-          className="bg-primary h-full w-18 rounded-lg object-cover"
-        />
+      <div className="flex flex-row items-start gap-2">
+        <ThesisFrontPageStudent thesis={thesis} />
         <div className="text-foreground/80 flex-col gap-1 text-xs">
           <p className="font-black uppercase">{thesis.title}</p>
           <p className="text-[12px] font-bold">

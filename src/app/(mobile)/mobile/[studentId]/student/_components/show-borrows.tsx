@@ -28,6 +28,7 @@ import { useParams } from "next/navigation";
 import { parseAsStringEnum, useQueryState } from "nuqs";
 import React from "react";
 import { toast } from "sonner";
+import ThesisFrontPageStudent from "@/app/_components/thesisFrontPageStudent";
 
 function ShowBorrows() {
   const { studentId } = useParams();
@@ -122,17 +123,7 @@ function ShowBorrows() {
                     <div className={`flex w-full flex-row items-center gap-2`}>
                       <div className="text-foreground/80 grid w-full gap-1 text-xs">
                         <div className="flex h-full w-full flex-row gap-1">
-                          <div>
-                            <div className="h-full w-15">
-                              <Image
-                                width={200}
-                                height={200}
-                                alt="Thesis image"
-                                src={thesis.thesisPhoto}
-                                className="bg-primary/50 aspect-square w-full rounded-md border object-cover"
-                              />
-                            </div>
-                          </div>
+                          <ThesisFrontPageStudent thesis={thesis} />
                           <div className="flex flex-1 flex-col justify-between">
                             <div>
                               <p className="font-black uppercase">

@@ -112,15 +112,20 @@ function ThesisDisplay({ thesisId }: { thesisId: string }) {
         thesisId={thesisId}
         studentId={studentId as string}
       />
-      <Image
+      {/* <Image
         width={200}
         height={200}
         alt="Thesis image"
         src={data.thesisPhoto}
         className="bg-primary/50 h-52 w-full rounded-md border object-cover"
-      />
+      /> */}
+
+      <div className="flex flex-col gap-1">
+        {/* <p className="px-1 text-justify text-xs">{data.abstract}</p> */}
+        <PdfFlipBook thesis={data} pdfUrl={data.thesesUrl} />
+      </div>
       <p className="justify-between font-bold uppercase">{data.title}</p>
-      <div className="flex w-full flex-row gap-2">
+      <div className="flex w-full flex-col gap-1">
         <div className="flex flex-row items-center gap-1 text-sm font-semibold">
           <CalendarDays className="size-3.5" strokeWidth={3} />{" "}
           {format(data.year, "yyyy")}
@@ -156,18 +161,6 @@ function ThesisDisplay({ thesisId }: { thesisId: string }) {
           })}
         </div>
       </div>
-      {data.thesesUrl ? (
-        <div className="mt-2 flex flex-col gap-1">
-          <div className="text-foreground/50 text-xs">EPUB</div>
-          {/* <p className="px-1 text-justify text-xs">{data.abstract}</p> */}
-          <PdfFlipBook
-            thesis={data}
-            pdfUrl={data.thesesUrl}
-          />
-        </div>
-      ) : (
-        <p className="px-1 text-justify text-xs mt-2">{data.abstract}</p>
-      )}
       <Separator className="my-2" />
       <div className="flex flex-row items-center gap-1 text-xs font-bold">
         <MessageSquareText className="size-4" /> Comments

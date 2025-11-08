@@ -13,8 +13,8 @@ interface PdfFlipBookProps {
   thesis: Theses;
 }
 
-const PdfFlipBook: React.FC<PdfFlipBookProps> = ({ pdfUrl, thesis }) => {
-  const [pages, setPages] = useState<string[]>(["front", "back"]);
+const PdfFlipBookWeb: React.FC<PdfFlipBookProps> = ({ pdfUrl, thesis }) => {
+  const [pages, setPages] = useState<string[]>([]);
   const [bookSize, setBookSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
@@ -51,25 +51,24 @@ const PdfFlipBook: React.FC<PdfFlipBookProps> = ({ pdfUrl, thesis }) => {
         setPages(["front", ...renderedPages, "back"]);
       };
       loadPdf();
-    } 
+    }
   }, [pdfUrl]);
-
-  const FlipBook = HTMLFlipBook as any;
-
   
   if (!pdfUrl || pages.length <= 2) {
     return (
-      <div  className="flex items-center justify-center w-full h-[200px]">
+      <div  className="flex items-center justify-center w-[300px] h-[400px]">
         <p className="text-gray-500">Loading thesis...</p>
       </div>
     );
   }
 
+  const FlipBook = HTMLFlipBook as any;
+
   return (
     <div className="flex border">
       <FlipBook
-        width={bookSize.width}
-        height={bookSize.height}
+        width={300}
+        height={400}
         showCover={true}
         className="max-w-full rounded-lg shadow-xl"
       >
@@ -83,8 +82,8 @@ const PdfFlipBook: React.FC<PdfFlipBookProps> = ({ pdfUrl, thesis }) => {
                 data-density="hard"
               >
                 <div className="page-content h-full">
-                  <div className="flex h-full w-full text-[3vw] flex-col items-center justify-between gap-10 px-5 py-10 text-amber-300">
-                    <div className="flex flex-col gap-20">
+                  <div className="flex h-full w-full flex-col items-center justify-between px-5 py-10 text-[11px] text-amber-300">
+                    <div className="flex flex-col gap-16">
                       <p className="text-center font-bold">{thesis.title}</p>
                       <div>
                         <p className="text-center font-semibold">
@@ -95,23 +94,23 @@ const PdfFlipBook: React.FC<PdfFlipBookProps> = ({ pdfUrl, thesis }) => {
                         </p>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-20">
+                    <div className="flex flex-col gap-16">
                       <div className="flex flex-col gap-0">
-                        <p className="text-center  text-[2.9vw] font-medium opacity-80">
+                        <p className="text-center text-[10px] font-medium opacity-80">
                           By
                         </p>
                         {members.map((m, idx) => {
                           return (
                             <p
                               key={idx}
-                              className="text-center  text-[2.9vw] font-medium"
+                              className="text-center text-[10px] font-medium"
                             >
                               {m.name}
                             </p>
                           );
                         })}
                       </div>
-                      <p className="text-center  text-[2.9vw] font-bold uppercase">
+                      <p className="text-center text-[10px] font-bold uppercase">
                         {format(thesis.year, "MMM yyyy")}
                       </p>
                     </div>
@@ -126,7 +125,7 @@ const PdfFlipBook: React.FC<PdfFlipBookProps> = ({ pdfUrl, thesis }) => {
                 className={`page page-cover ${thesis.courseCode === "BSIT" ? "bg-primary" : thesis.courseCode === "BSIS" ? "bg-red-500" : "bg-red-800"} brightness-80 contrast-75`}
                 data-density="hard"
               >
-                <div className="page-content flex h-full flex-col items-center justify-center px-5 py-8 text-[3vw] text-amber-300">
+                <div className="page-content flex h-full flex-col items-center justify-center px-5 py-8 text-[11px] text-amber-300">
                   {/* Decorative Border or Logo Section */}
                   <div className="flex flex-col items-center justify-center gap-4">
                     <p className="text-center font-bold tracking-widest">
@@ -144,7 +143,7 @@ const PdfFlipBook: React.FC<PdfFlipBookProps> = ({ pdfUrl, thesis }) => {
 
                   {/* Optional course identifier at the bottom */}
                   <div className="absolute bottom-4 flex w-full justify-center">
-                    <p className="text-[2.8vw] opacity-70">
+                    <p className="text-[9px] opacity-70">
                       {thesis.courseCode === "BSIT"
                         ? "Bachelor of Science in Information Technology"
                         : thesis.courseCode}
@@ -172,4 +171,4 @@ const PdfFlipBook: React.FC<PdfFlipBookProps> = ({ pdfUrl, thesis }) => {
   );
 };
 
-export default PdfFlipBook;
+export default PdfFlipBookWeb;

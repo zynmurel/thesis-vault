@@ -1,4 +1,5 @@
 "use client";
+import ThesisFrontPageStudent from "@/app/_components/thesisFrontPageStudent";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button-small";
 import { isDateBAfterDateA } from "@/lib/utils";
@@ -19,7 +20,7 @@ export const BorrowStatus = ({
   return (
     <Badge
       variant={"default"}
-      className={` text-[8px] px-0 w-full ${status === "BORROWED" ? "bg-orange-500" : status === "RETURNED" ? "bg-blue-500" : status === "CANCELLED" ? "bg-red-500" : "bg-gray-500"}`}
+      className={`w-full px-0 text-[8px] ${status === "BORROWED" ? "bg-orange-500" : status === "RETURNED" ? "bg-blue-500" : status === "CANCELLED" ? "bg-red-500" : "bg-gray-500"}`}
     >
       {status}
     </Badge>
@@ -84,15 +85,7 @@ function BorrowHistory() {
                       <div className="flex h-full w-full flex-row gap-1">
                         <div>
                           <BorrowStatus status={borrows.status} />
-                          <div className="h-full w-15 mt-1">
-                            <Image
-                              width={200}
-                              height={200}
-                              alt="Thesis image"
-                              src={thesis.thesisPhoto}
-                              className="bg-primary/50 aspect-square w-full rounded-md border object-cover"
-                            />
-                          </div>
+                          <ThesisFrontPageStudent thesis={thesis} />
                         </div>
                         <div className="flex flex-1 flex-col justify-between">
                           <div>
@@ -124,7 +117,12 @@ function BorrowHistory() {
                               <div
                                 className={`text-end text-[10px] ${isDateBAfterDateA(borrows.borrowDueAt, borrows.returnedAt) ? "text-red-500" : "text-green-500"}`}
                               >
-                                {isDateBAfterDateA(borrows.borrowDueAt, borrows.returnedAt) ? 'Penalty' : 'Returned at time'}
+                                {isDateBAfterDateA(
+                                  borrows.borrowDueAt,
+                                  borrows.returnedAt,
+                                )
+                                  ? "Penalty"
+                                  : "Returned at time"}
                               </div>
                             )}
                           </div>

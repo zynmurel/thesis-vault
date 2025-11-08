@@ -1,4 +1,5 @@
 "use client";
+import ThesisFrontPageStudent from "@/app/_components/thesisFrontPageStudent";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/trpc/react";
 import { format } from "date-fns";
@@ -46,15 +47,7 @@ function PendingBorrows({
                   </p>
                 </div>
                 <div className="flex h-full w-full flex-row gap-1">
-                  <div className="h-full w-15">
-                    <Image
-                      width={200}
-                      height={200}
-                      alt="Thesis image"
-                      src={thesis.thesisPhoto}
-                      className="bg-primary/50 h-full w-full rounded-md border object-cover"
-                    />
-                  </div>
+                  <ThesisFrontPageStudent thesis={thesis} />
                   <div className="flex flex-1 flex-col justify-between">
                     <div>
                       <p className="font-black uppercase">{thesis.title}</p>

@@ -28,6 +28,7 @@ import {
 import React, { useState } from "react";
 import BorrowManyBookModal from "./borrow-many-thesis";
 import SuccessBorrowManyThesisModal from "./success-borrow-many-thesis";
+import ThesisFrontPageStudent from "@/app/_components/thesisFrontPageStudent";
 
 function Bag() {
   const [show, setShowBag] = useQueryState(
@@ -119,9 +120,9 @@ const Theses = ({
 
   return (
     <>
-      <div className=" flex flex-col gap-2 p-2 pb-20">
+      <div className="flex flex-col gap-2 p-2 pb-20">
         <BorrowManyBookModal setIds={setIds} />
-        <SuccessBorrowManyThesisModal/>
+        <SuccessBorrowManyThesisModal />
         <div className="bg-background flex flex-row items-center gap-2 rounded-xl border p-2 shadow">
           <Checkbox
             checked={ids.length === theses.length}
@@ -210,17 +211,9 @@ const Thesis = ({
       />
       <div key={index} className="flex flex-col gap-1">
         <div className="flex flex-row items-center gap-2">
-          <Image
-            width={50}
-            height={50}
-            src={thesis.thesisPhoto}
-            alt={`thesis ${index}`}
-            className="bg-primary h-full w-18 rounded-lg object-cover"
-          />
+          <ThesisFrontPageStudent thesis={thesis} />
           <div className="text-foreground/80 flex-col gap-1 text-xs">
-            <p className="font-black uppercase">
-              {thesis.title}
-            </p>
+            <p className="font-black uppercase">{thesis.title}</p>
             <p className="text-[12px] font-bold">
               {thesis.courseCode} - {new Date(thesis.year).getFullYear()}
             </p>

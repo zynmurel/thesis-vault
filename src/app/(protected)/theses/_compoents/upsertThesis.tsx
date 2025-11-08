@@ -129,21 +129,21 @@ export default function UpsertThesis() {
       return;
     }
     setIsLoading(true);
-    let photo = thesisPhoto;
+    // let photo = thesisPhoto;
     let url = thesisUrl;
-    if (data.thesisPhoto) {
-      photo = await handleUploadSupabase(data.thesisPhoto).finally(() =>
-        setIsLoading(false),
-      );
-    }
+    // if (data.thesisPhoto) {
+    //   photo = await handleUploadSupabase(data.thesisPhoto).finally(() =>
+    //     setIsLoading(false),
+    //   );
+    // }
     if (data.thesisUrl) {
       url = await handleUploadSupabase(data.thesisUrl).finally(() =>
         setIsLoading(false),
       );
     }
-    if (!photo || !url) {
+    if (/*!photo ||*/ !url) {
       setIsLoading(false);
-      !photo && form.setError("thesisPhoto", { message: "Image is required" });
+      // !photo && form.setError("thesisPhoto", { message: "Image is required" });
       !url &&
         form.setError("thesisUrl", { message: "Thesis PDF File is required" });
     } else {
@@ -156,7 +156,7 @@ export default function UpsertThesis() {
         thesesUrl: url,
         members: JSON.stringify(data.members),
         tagIds: data.tags,
-        thesisPhoto: photo,
+        // thesisPhoto: photo,
         quantity: data.quantity,
       });
     }
@@ -187,7 +187,6 @@ export default function UpsertThesis() {
       });
     }
   }, [thesis, thesesId]);
-  console.log(thesis);
 
   return (
     <Dialog open={!!thesesId} onOpenChange={onClose}>
@@ -285,7 +284,7 @@ const ThesisForm = ({
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="mt-2 max-h-[70vh] space-y-4 overflow-y-scroll px-2">
-          <FormField
+          {/* <FormField
             control={form.control}
             name="thesisPhoto"
             render={() => (
@@ -327,7 +326,7 @@ const ThesisForm = ({
                 <FormMessage />
               </FormItem>
             )}
-          />
+          /> */}
           <div className="grid grid-cols-3 gap-4">
             <FormField
               control={control}

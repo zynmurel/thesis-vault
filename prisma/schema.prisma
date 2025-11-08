@@ -145,7 +145,7 @@ model StudentBorrow {
 model Theses {
     id          String           @id @default(uuid())
     courseCode  String
-    thesisPhoto String
+    thesisPhoto String?
     abstract    String?
     thesesUrl   String?
     title       String

@@ -1,4 +1,5 @@
 "use client";
+import ThesisFrontPageStudent from "@/app/_components/thesisFrontPageStudent";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button-small";
 import { isDateBAfterDateA } from "@/lib/utils";
@@ -48,7 +49,7 @@ function ActiveBorrows() {
             <p className="text-xs font-normal">Go Back</p>
           </div>
           <div className="h-full space-y-3 overflow-auto p-1.5 pb-20">
-            <div className="flex flex-row items-center gap-1 mt-2 px-1">
+            <div className="mt-2 flex flex-row items-center gap-1 px-1">
               <BookCheck className="size-4" strokeWidth={3} />
               <p className="text-sm font-bold">Active Borrows</p>
             </div>
@@ -67,21 +68,11 @@ function ActiveBorrows() {
                 return (
                   <div
                     key={borrows.id}
-                    className={`flex w-full flex-row items-center gap-2 border-b bg-white p-2 ${!index && 'border-t'}`}
+                    className={`flex w-full flex-row items-center gap-2 border-b bg-white p-2 ${!index && "border-t"}`}
                   >
                     <div className="text-foreground/80 grid w-full gap-1 text-xs">
                       <div className="flex h-full w-full flex-row gap-1">
-                        <div>
-                          <div className="h-full w-15">
-                            <Image
-                              width={200}
-                              height={200}
-                              alt="Thesis image"
-                              src={thesis.thesisPhoto}
-                              className="bg-primary/50 aspect-square w-full rounded-md border object-cover"
-                            />
-                          </div>
-                        </div>
+                        <ThesisFrontPageStudent thesis={thesis} />
                         <div className="flex flex-1 flex-col justify-between">
                           <div>
                             <p className="font-black uppercase">
